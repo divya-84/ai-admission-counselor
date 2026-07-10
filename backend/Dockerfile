@@ -4,6 +4,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY shared/package.json ./shared/
 COPY backend/package.json ./backend/
+COPY frontend/package.json ./frontend/
 RUN npm ci
 COPY shared/ ./shared/
 COPY backend/ ./backend/
@@ -14,11 +15,12 @@ WORKDIR /app/backend
 RUN npx prisma generate
 
 # Production Stage
-FROM node:24-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 COPY package*.json ./
 COPY shared/package.json ./shared/
 COPY backend/package.json ./backend/
+COPY frontend/package.json ./frontend/
 RUN npm ci --omit=dev
 # Copy built dists
 COPY --from=builder /app/shared/dist ./shared/dist

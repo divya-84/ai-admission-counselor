@@ -1,8 +1,9 @@
 # Build Stage
-FROM node:24-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
 COPY shared/package.json ./shared/
+COPY backend/package.json ./backend/
 COPY frontend/package.json ./frontend/
 RUN npm ci
 COPY shared/ ./shared/
