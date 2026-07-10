@@ -2,27 +2,30 @@
 
 ## Current State
 
-The Student Registration API has been fully debugged, resolved, and verified. We solved a payload name parameter mismatch where the frontend sent `name` while the backend expected `fullname`. By updating both the shared Zod schema validation layers and the backend controllers to support both keys, we established clean forward and backward compatibility.
+All deployment configurations (Dockerfiles, monorepo workspaces, Render blueprints, and asset builders) have been thoroughly reviewed, corrected, and verified. We resolved a monorepo workspace resolution error in Docker builder stages (`ENOENT` during `npm ci` due to missing workspace directories) and resolved a production startup crash caused by `admin_settings.json` not being copied during TypeScript compilation.
 
-- **Status**: Student Registration Fixed | Ready for Validation
+- **Status**: Deployment Configuration Resolved | Ready for Render & Vercel
 - **Tech Stack Verified**: React 19, Express, TypeScript, Prisma (PostgreSQL), Multer, pdf-parse, Tailwind CSS, Winston, ESLint, Prettier, and Docker.
 
 ---
 
 ## Completed Tasks
 
-### 1. Student Registration API Debug
+### 1. Production Deployment Fixes
 
-- **Shared Schema**:
-  - Updated `registerSchema` inside [schemas/index.ts](file:///c:/Users/mahes/OneDrive/Desktop/AI_Admission_Counselor/shared/src/schemas/index.ts) supporting optional `name` and `fullname` parameters with a refinement check.
-- **Backend Controller**:
-  - Configured `AuthController` inside [auth.controller.ts](file:///c:/Users/mahes/OneDrive/Desktop/AI_Admission_Counselor/backend/src/controllers/auth.controller.ts) to extract `name` or `fullname` and route it to the user repository database engine under the `name` column.
-- **Frontend Form Payload**:
-  - Modified [Register.tsx](file:///c:/Users/mahes/OneDrive/Desktop/AI_Admission_Counselor/frontend/src/pages/Register.tsx) mapping the input field `name` as `fullname` in the JSON post payload. Shortened redirection delay to 3 seconds.
+- **Dockerfile Workspace Setup**:
+  - Updated [backend/Dockerfile](file:///c:/Users/mahes/OneDrive/Desktop/AI_Admission_Counselor/backend/Dockerfile) and [frontend/Dockerfile](file:///c:/Users/mahes/OneDrive/Desktop/AI_Admission_Counselor/frontend/Dockerfile) to copy all workspace `package.json` descriptors before running `npm ci` so npm correctly resolves local workspace dependencies.
+- **Production Asset Copies**:
+  - Created [copy-assets.js](file:///c:/Users/mahes/OneDrive/Desktop/AI_Admission_Counselor/backend/scripts/copy-assets.js) to automatically copy `admin_settings.json` to `dist/config/` post-compilation.
+  - Updated build configurations inside [package.json](file:///c:/Users/mahes/OneDrive/Desktop/AI_Admission_Counselor/backend/package.json).
+- **Node.js ABI Version Matching**:
+  - Aligned base Node.js container versions to `node:22-alpine` in all stages.
+- **Git Commits**:
+  - Committed all deployment-related fixes to the `main` branch.
 
-### 2. Production Deployment Setup
+### 2. Student Registration API Debug
 
-- **Status**: Completed. Nginx configuration created for React routing, GitHub workflows configured for CI/CD compiles, and `render.yaml`/`vercel.json` configurations created.
+- **Status**: Completed. Validation schemas and controllers updated to support both `name` and `fullname` parameters.
 
 ### 3. Voice Admission Counselor
 
