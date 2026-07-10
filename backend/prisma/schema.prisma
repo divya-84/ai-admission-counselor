@@ -1,0 +1,269 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ==========================================
+// ENUMS
+// ==========================================
+
+enum Role {
+  USER
+  ADMIN
+  COUNSELOR
+  STUDENT
+  HOD
+}
+
+enum AdmissionStatus {
+  APPLIED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum ScholarshipStatus {
+  APPLIED
+  AWARDED
+  REJECTED
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  NOSHOW
+}
+
+// ==========================================
+// MODELS
+// ==========================================
+
+model User {
+  id                   String            @id @default(uuid())
+  email                String            @unique
+  password             String
+  name                 String?
+  role                 Role              @default(USER)
+  isEmailVerified      Boolean           @default(false) @map("is_email_verified")
+  verificationToken    String?           @map("verification_token")
+  resetPasswordToken   String?           @map("reset_password_token")
+  resetPasswordExpires DateTime?         @map("reset_password_expires")
+  refreshToken         String?           @map("refresh_token")
+  createdAt            DateTime          @default(now()) @map("created_at")
+  updatedAt            DateTime          @updatedAt @map("updated_at")
+
+  // Relations
+  student       Student?
+  counselor     Counselor?
+  notifications Notification[]
+  sentChats     ChatMessage[]  @relation("SentChats")
+  receivedChats ChatMessage[]  @relation("ReceivedChats")
+
+  @@map("users")
+}
+
+model Student {
+  id               String               @id @default(uuid())
+  userId           String               @unique @map("user_id")
+  phone            String?
+  dateOfBirth      DateTime?            @map("date_of_birth")
+  gender           String?
+  address          String?
+  nationality      String?
+  academicLevel    String?              @map("academic_level")
+  highSchoolName   String?              @map("high_school_name")
+  gpa              Decimal?             @db.Decimal(4, 2)
+  testScores       Json?                @map("test_scores") // e.g. { "sat": 1450, "ielts": 7.5 }
+  preferredCountry String?              @map("preferred_country")
+  preferredIntake  String?              @map("preferred_intake")
+  createdAt        DateTime             @default(now()) @map("created_at")
+  updatedAt        DateTime             @updatedAt @map("updated_at")
+
+  // Relations
+  user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  admissions       Admission[]
+  documents        Document[]
+  appointments     Appointment[]
+  scholarships     StudentScholarship[]
+
+  @@map("students")
+}
+
+model Counselor {
+  id             String        @id @default(uuid())
+  userId         String        @unique @map("user_id")
+  phone          String?
+  specialization String?
+  bio            String?
+  rating         Float?        @default(5.0)
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  admissions     Admission[]
+  appointments   Appointment[]
+
+  @@map("counselors")
+}
+
+model Department {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  courses     Course[]
+
+  @@map("departments")
+}
+
+model Course {
+  id            String      @id @default(uuid())
+  code          String      @unique
+  name          String
+  description   String?
+  durationYears Int         @map("duration_years")
+  tuitionFee    Decimal     @map("tuition_fee") @db.Decimal(10, 2)
+  requirements  String?
+  departmentId  String      @map("department_id")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  department    Department  @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  admissions    Admission[]
+
+  @@map("courses")
+}
+
+model Admission {
+  id            String          @id @default(uuid())
+  studentId     String          @map("student_id")
+  courseId      String          @map("course_id")
+  counselorId   String?         @map("counselor_id")
+  status        AdmissionStatus @default(APPLIED)
+  appliedIntake String          @map("applied_intake")
+  notes         String?
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  student       Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course        Course          @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  counselor     Counselor?      @relation(fields: [counselorId], references: [id], onDelete: SetNull)
+
+  @@map("admissions")
+}
+
+model Document {
+  id                 String             @id @default(uuid())
+  studentId          String             @map("student_id")
+  name               String
+  type               String
+  url                String
+  verificationStatus VerificationStatus @default(PENDING) @map("verification_status")
+  notes              String?
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+
+  // Relations
+  student            Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("documents")
+}
+
+model Scholarship {
+  id                  String               @id @default(uuid())
+  name                String
+  description         String?
+  amount              Decimal              @db.Decimal(10, 2)
+  requirements        String?
+  applicationDeadline DateTime?            @map("application_deadline")
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+
+  // Relations
+  students            StudentScholarship[]
+
+  @@map("scholarships")
+}
+
+model StudentScholarship {
+  id            String            @id @default(uuid())
+  studentId     String            @map("student_id")
+  scholarshipId String            @map("scholarship_id")
+  status        ScholarshipStatus @default(APPLIED)
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+
+  // Relations
+  student       Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  scholarship   Scholarship       @relation(fields: [scholarshipId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, scholarshipId])
+  @@map("student_scholarships")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  title     String
+  content   String
+  type      String   // SYSTEM, CHAT, ADMISSION, APPOINTMENT
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model ChatMessage {
+  id           String   @id @default(uuid())
+  senderId     String   @map("sender_id")
+  receiverId   String?  @map("receiver_id")
+  message      String
+  isBot        Boolean  @default(false) @map("is_bot")
+  sessionToken String?  @map("session_token")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Relations
+  sender       User     @relation("SentChats", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver     User?    @relation("ReceivedChats", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@map("chat_messages")
+}
+
+model Appointment {
+  id              String            @id @default(uuid())
+  studentId       String            @map("student_id")
+  counselorId     String            @map("counselor_id")
+  scheduledAt     DateTime          @map("scheduled_at")
+  durationMinutes Int               @default(30) @map("duration_minutes")
+  status          AppointmentStatus @default(SCHEDULED)
+  notes           String?
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  // Relations
+  student         Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  counselor       Counselor         @relation(fields: [counselorId], references: [id], onDelete: Cascade)
+
+  @@map("appointments")
+}
