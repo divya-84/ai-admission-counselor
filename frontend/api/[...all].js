@@ -8,13 +8,6 @@ export const config = {
 };
 
 export default function handler(req, res) {
-  if (req.url.includes('debug-env')) {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ BACKEND_API_URL: process.env.BACKEND_API_URL }));
-    return;
-  }
-
   const backendUrl = process.env.BACKEND_API_URL || process.env.BACKEND_URL;
   if (!backendUrl) {
     res.statusCode = 500;
