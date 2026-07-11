@@ -10,12 +10,10 @@ export const config = {
 export default function handler(req, res) {
   const backendUrl = process.env.BACKEND_API_URL || process.env.BACKEND_URL;
   if (!backendUrl) {
-    res
-      .status(500)
-      .json({
-        error: 'Configuration Error',
-        message: 'BACKEND_API_URL environment variable is missing on Vercel.',
-      });
+    res.status(500).json({
+      error: 'Configuration Error',
+      message: 'BACKEND_API_URL environment variable is missing on Vercel.',
+    });
     return;
   }
 
