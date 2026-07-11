@@ -2,29 +2,30 @@
 
 ## Current State
 
-All deployment configurations have been updated and verified for a transition from Render to Railway (Backend & Database) and Vercel (Frontend). We removed Render-specific blueprints and environment references, configured a direct Node.js deployment on Railway utilizing Nixpacks, and introduced a Vercel Serverless API Proxy to route relative frontend requests dynamically to the Railway backend URL via environment variables.
+All deployment configurations have been updated and verified for a transition to Render Web Service (Backend & PostgreSQL Database) and Vercel (Frontend). We removed Render-specific blueprints (`render.yaml`), cleaned up Railway configurations, configured the backend workspace build script to automatically generate the Prisma Client at build time, and verified the entire monorepo builds cleanly.
 
-- **Status**: Deployment Configuration Migrated | Ready for Railway & Vercel
-- **Tech Stack Verified**: React 19, Express, TypeScript, Prisma (PostgreSQL), Nixpacks, Vercel Serverless Functions, Tailwind CSS, Winston, and ESLint.
+- **Status**: Deployment Configuration Prepared | Ready for Render & Vercel Manual Deployment
+- **Tech Stack Verified**: React 19, Express, TypeScript, Prisma (PostgreSQL), Vercel Serverless Functions, Tailwind CSS, Winston, and ESLint.
 
 ---
 
 ## Completed Tasks
 
-### 1. Railway & Vercel Transition Setup
+### 1. Render (Web Service) & Vercel Setup
 
-- **Render Configuration Removal**:
+- **Render Blueprint Clean-up**:
   - Deleted the Render blueprint `render.yaml` file from the workspace root.
-  - Replaced the hardcoded Render backend URL inside `vercel.json` and `frontend/vercel.json` with a Vercel API proxy.
-- **Railway Configuration (`railway.json`)**:
-  - Created [railway.json](file:///c:/Users/mahes/OneDrive/Desktop/AI_Admission_Counselor/railway.json) at the root to orchestrate direct Node.js builds on Railway using the Nixpacks builder.
-  - Set up build-time Prisma Client generation and start-time database migrations.
+  - Configured the backend to deploy as a standard, non-Blueprint Node.js Web Service on Render.
+- **Railway Clean-up**:
+  - Deleted Railway configuration files (`railway.json`, `DEPLOY_RAILWAY.md`).
+- **Prisma Client Generation**:
+  - Updated [package.json](file:///c:/Users/mahes/OneDrive/Desktop/AI_Admission_Counselor/backend/package.json) build script to automatically run `prisma generate` prior to TypeScript compilation, ensuring clean builds on Render.
 - **Vercel API Proxy Setup (`api/[...all].js`)**:
   - Created [api/[...all].js](file:///c:/Users/mahes/OneDrive/Desktop/AI_Admission_Counselor/api/[...all].js) and [frontend/api/[...all].js](file:///c:/Users/mahes/OneDrive/Desktop/AI_Admission_Counselor/frontend/api/[...all].js) to intercept and forward `/api/*` requests to the configured `BACKEND_API_URL` environment variable using Node's native streaming.
 - **Documentation**:
-  - Created [DEPLOY_RAILWAY.md](file:///c:/Users/mahes/OneDrive/Desktop/AI_Admission_Counselor/DEPLOY_RAILWAY.md) detailing backend, frontend, database setup, environment variables, troubleshooting, and rollback procedures.
+  - Created [RENDER_MANUAL_DEPLOYMENT.md](file:///c:/Users/mahes/OneDrive/Desktop/AI_Admission_Counselor/RENDER_MANUAL_DEPLOYMENT.md) detailing backend Web Service, PostgreSQL connection, environment variables, Vercel frontend, validation, and troubleshooting.
 - **Verification**:
-  - Successfully ran `npm ci` and `npm run build` locally to verify monorepo compilation compatibility.
+  - Successfully ran `npm ci` and `npm run build` locally to verify monorepo compilation compatibility and automatic Prisma Client generation.
 
 ### 2. Student Registration API Debug
 
