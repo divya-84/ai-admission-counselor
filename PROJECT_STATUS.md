@@ -2,26 +2,29 @@
 
 ## Current State
 
-All deployment configurations (Dockerfiles, monorepo workspaces, Render blueprints, and asset builders) have been thoroughly reviewed, corrected, and verified. We resolved a monorepo workspace resolution error in Docker builder stages (`ENOENT` during `npm ci` due to missing workspace directories) and resolved a production startup crash caused by `admin_settings.json` not being copied during TypeScript compilation.
+All deployment configurations have been updated and verified for a transition from Render to Railway (Backend & Database) and Vercel (Frontend). We removed Render-specific blueprints and environment references, configured a direct Node.js deployment on Railway utilizing Nixpacks, and introduced a Vercel Serverless API Proxy to route relative frontend requests dynamically to the Railway backend URL via environment variables.
 
-- **Status**: Deployment Configuration Resolved | Ready for Render & Vercel
-- **Tech Stack Verified**: React 19, Express, TypeScript, Prisma (PostgreSQL), Multer, pdf-parse, Tailwind CSS, Winston, ESLint, Prettier, and Docker.
+- **Status**: Deployment Configuration Migrated | Ready for Railway & Vercel
+- **Tech Stack Verified**: React 19, Express, TypeScript, Prisma (PostgreSQL), Nixpacks, Vercel Serverless Functions, Tailwind CSS, Winston, and ESLint.
 
 ---
 
 ## Completed Tasks
 
-### 1. Production Deployment Fixes
+### 1. Railway & Vercel Transition Setup
 
-- **Dockerfile Workspace Setup**:
-  - Updated [backend/Dockerfile](file:///c:/Users/mahes/OneDrive/Desktop/AI_Admission_Counselor/backend/Dockerfile) and [frontend/Dockerfile](file:///c:/Users/mahes/OneDrive/Desktop/AI_Admission_Counselor/frontend/Dockerfile) to copy all workspace `package.json` descriptors before running `npm ci` so npm correctly resolves local workspace dependencies.
-- **Production Asset Copies**:
-  - Created [copy-assets.js](file:///c:/Users/mahes/OneDrive/Desktop/AI_Admission_Counselor/backend/scripts/copy-assets.js) to automatically copy `admin_settings.json` to `dist/config/` post-compilation.
-  - Updated build configurations inside [package.json](file:///c:/Users/mahes/OneDrive/Desktop/AI_Admission_Counselor/backend/package.json).
-- **Node.js ABI Version Matching**:
-  - Aligned base Node.js container versions to `node:22-alpine` in all stages.
-- **Git Commits**:
-  - Committed all deployment-related fixes to the `main` branch.
+- **Render Configuration Removal**:
+  - Deleted the Render blueprint `render.yaml` file from the workspace root.
+  - Replaced the hardcoded Render backend URL inside `vercel.json` and `frontend/vercel.json` with a Vercel API proxy.
+- **Railway Configuration (`railway.json`)**:
+  - Created [railway.json](file:///c:/Users/mahes/OneDrive/Desktop/AI_Admission_Counselor/railway.json) at the root to orchestrate direct Node.js builds on Railway using the Nixpacks builder.
+  - Set up build-time Prisma Client generation and start-time database migrations.
+- **Vercel API Proxy Setup (`api/[...all].js`)**:
+  - Created [api/[...all].js](file:///c:/Users/mahes/OneDrive/Desktop/AI_Admission_Counselor/api/[...all].js) and [frontend/api/[...all].js](file:///c:/Users/mahes/OneDrive/Desktop/AI_Admission_Counselor/frontend/api/[...all].js) to intercept and forward `/api/*` requests to the configured `BACKEND_API_URL` environment variable using Node's native streaming.
+- **Documentation**:
+  - Created [DEPLOY_RAILWAY.md](file:///c:/Users/mahes/OneDrive/Desktop/AI_Admission_Counselor/DEPLOY_RAILWAY.md) detailing backend, frontend, database setup, environment variables, troubleshooting, and rollback procedures.
+- **Verification**:
+  - Successfully ran `npm ci` and `npm run build` locally to verify monorepo compilation compatibility.
 
 ### 2. Student Registration API Debug
 
