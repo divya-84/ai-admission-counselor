@@ -13,7 +13,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "build": "npm run build -w shared && npm run build -w backend && npm run build -w frontend",
+    "build": "npm run build -w shared && npx prisma db push --schema=backend/prisma/schema.prisma && npm run build -w backend && npm run build -w frontend",
     "prepare": "husky"
   },
   "devDependencies": {
