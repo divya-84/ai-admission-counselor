@@ -332,10 +332,20 @@ export class AuthController {
         connectionResult = 'FAILED: ' + (err instanceof Error ? err.message : String(err));
       }
 
+      let liveTestResult = 'Not run';
+      try {
+        const testRecipient = process.env.SMTP_USER || 'maheshwari.divya84@gmail.com';
+        await emailService.sendWelcomeEmail(testRecipient, 'Diagnostics Test');
+        liveTestResult = `SUCCESS: Test email sent successfully to ${testRecipient}!`;
+      } catch (err) {
+        liveTestResult = 'FAILED: ' + (err instanceof Error ? err.message : String(err));
+      }
+
       res.status(200).json({
         status: 'success',
         config,
         connectionResult,
+        liveTestResult,
       });
     } catch (err) {
       res.status(500).json({
