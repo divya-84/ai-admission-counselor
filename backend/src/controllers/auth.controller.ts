@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 import { authService } from '../services/auth.service.js';
+import { emailService } from '../services/email/email.service.js';
 import {
   loginSchema,
   registerSchema,
@@ -304,6 +305,43 @@ export class AuthController {
       });
     } catch (err) {
       next(err);
+    }
+  }
+
+  async diagnoseEmail(_req: Request, res: Response): Promise<void> {
+    try {
+      const emailProvider = process.env.EMAIL_PROVIDER || 'not-set';
+      const config = {
+        EMAIL_PROVIDER: emailProvider,
+        SMTP_HOST: process.env.SMTP_HOST || 'not-set',
+        SMTP_PORT: process.env.SMTP_PORT || 'not-set',
+        SMTP_USER: process.env.SMTP_USER ? `defined (value: ${process.env.SMTP_USER})` : 'not-set',
+        SMTP_PASS: process.env.SMTP_PASS
+          ? `defined (length: ${process.env.SMTP_PASS.length})`
+          : 'not-set',
+        EMAIL_FROM: process.env.EMAIL_FROM || 'not-set',
+        RESEND_API_KEY: process.env.RESEND_API_KEY ? 'defined' : 'not-set',
+        NODE_ENV: process.env.NODE_ENV || 'not-set',
+      };
+
+      let connectionResult = 'Not tested';
+      try {
+        await emailService.verifyConnection();
+        connectionResult = 'SUCCESS: Connection verified successfully';
+      } catch (err) {
+        connectionResult = 'FAILED: ' + (err instanceof Error ? err.message : String(err));
+      }
+
+      res.status(200).json({
+        status: 'success',
+        config,
+        connectionResult,
+      });
+    } catch (err) {
+      res.status(500).json({
+        status: 'error',
+        message: err instanceof Error ? err.message : String(err),
+      });
     }
   }
 }

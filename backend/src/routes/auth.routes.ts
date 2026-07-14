@@ -29,6 +29,7 @@ router.post(
   authLimiter as RequestHandler,
   authController.resetPassword as RequestHandler,
 );
+router.get('/diagnose', authController.diagnoseEmail as RequestHandler);
 
 // Protected routes
 router.post('/logout', authenticateJWT as RequestHandler, authController.logout as RequestHandler);
