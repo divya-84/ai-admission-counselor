@@ -11,6 +11,7 @@ import {
   resendVerificationSchema,
 } from '@project/shared';
 import { AuthenticatedRequest } from '../middlewares/auth.interface.js';
+import logger from '../config/logger.js';
 
 export class AuthController {
   async register(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -223,7 +224,16 @@ export class AuthController {
 
   async resetPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { token, password } = resetPasswordSchema.parse(req.body);
+      logger.info('Reset password request body:', {
+        ...req.body,
+        password: req.body?.password ? '***' : undefined,
+        confirmPassword: req.body?.confirmPassword ? '***' : undefined,
+      });
+      const { token, password, confirmPassword } = resetPasswordSchema.parse(req.body);
+      logger.info(
+        'Password match validation status:',
+        confirmPassword ? 'validated' : 'no-confirmation',
+      );
       const result = await authService.resetPassword(token, password);
 
       res.status(200).json({

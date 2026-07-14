@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router';
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { resetPasswordSchema } from '@project/shared';
 
 export const ResetPassword: React.FC = () => {
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -15,37 +16,31 @@ export const ResetPassword: React.FC = () => {
   const token = searchParams.get('token');
   const navigate = useNavigate();
 
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      token: token || '',
+      password: '',
+      confirmPassword: '',
+    },
+  });
+
   useEffect(() => {
-    if (!token) {
+    if (token) {
+      setValue('token', token);
+    } else {
       setError('Invalid or missing password reset token.');
     }
-  }, [token]);
+  }, [token, setValue]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: z.infer<typeof resetPasswordSchema>) => {
     setError('');
     setSuccess(false);
-
-    if (!token) {
-      setError('Invalid token');
-      return;
-    }
-
-    if (!password || !confirmPassword) {
-      setError('Please fill in all fields');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
     setIsLoading(true);
 
     try {
@@ -54,7 +49,7 @@ export const ResetPassword: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ token, password, confirmPassword }),
+        body: JSON.stringify(data),
       });
 
       const result = await response.json();
@@ -118,7 +113,7 @@ export const ResetPassword: React.FC = () => {
 
         {/* Form */}
         {!success && token && (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-1">
               <label className="text-slate-300 text-xs font-semibold uppercase tracking-wider">
                 New Password
@@ -127,10 +122,13 @@ export const ResetPassword: React.FC = () => {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-10 py-2.5 text-slate-100 placeholder-slate-600 focus:border-indigo-500 focus:outline-none transition-all text-sm"
+                  {...register('password')}
+                  className={`w-full bg-slate-950 border rounded-lg pl-10 pr-10 py-2.5 text-slate-100 placeholder-slate-600 focus:outline-none transition-all text-sm ${
+                    errors.password
+                      ? 'border-red-500 focus:border-red-500'
+                      : 'border-slate-800 focus:border-indigo-500'
+                  }`}
                 />
                 <button
                   type="button"
@@ -140,6 +138,9 @@ export const ResetPassword: React.FC = () => {
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
+              {errors.password && (
+                <span className="text-red-500 text-xs mt-1 block">{errors.password.message}</span>
+              )}
             </div>
 
             <div className="space-y-1">
@@ -150,12 +151,20 @@ export const ResetPassword: React.FC = () => {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-10 pr-10 py-2.5 text-slate-100 placeholder-slate-600 focus:border-indigo-500 focus:outline-none transition-all text-sm"
+                  {...register('confirmPassword')}
+                  className={`w-full bg-slate-950 border rounded-lg pl-10 pr-10 py-2.5 text-slate-100 placeholder-slate-600 focus:outline-none transition-all text-sm ${
+                    errors.confirmPassword
+                      ? 'border-red-500 focus:border-red-500'
+                      : 'border-slate-800 focus:border-indigo-500'
+                  }`}
                 />
               </div>
+              {errors.confirmPassword && (
+                <span className="text-red-500 text-xs mt-1 block">
+                  {errors.confirmPassword.message}
+                </span>
+              )}
             </div>
 
             <button
