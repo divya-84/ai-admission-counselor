@@ -22,6 +22,18 @@ export class UsersRepository {
     });
   }
 
+  async findByVerificationToken(token: string): Promise<User | null> {
+    return prisma.user.findFirst({
+      where: { verificationToken: token },
+    });
+  }
+
+  async findByResetToken(token: string): Promise<User | null> {
+    return prisma.user.findFirst({
+      where: { resetPasswordToken: token },
+    });
+  }
+
   async create(data: Prisma.UserCreateInput): Promise<User> {
     return prisma.user.create({
       data,
@@ -32,6 +44,36 @@ export class UsersRepository {
     return prisma.user.update({
       where: { id },
       data: updates,
+    });
+  }
+
+  async incrementFailedAttempts(id: string): Promise<User> {
+    return prisma.user.update({
+      where: { id },
+      data: {
+        failedLoginAttempts: {
+          increment: 1,
+        },
+      },
+    });
+  }
+
+  async resetFailedAttempts(id: string): Promise<User> {
+    return prisma.user.update({
+      where: { id },
+      data: {
+        failedLoginAttempts: 0,
+        lockedUntil: null,
+      },
+    });
+  }
+
+  async lockAccount(id: string, lockedUntil: Date): Promise<User> {
+    return prisma.user.update({
+      where: { id },
+      data: {
+        lockedUntil,
+      },
     });
   }
 }

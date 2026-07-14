@@ -3,16 +3,22 @@ import { z } from 'zod';
 export const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters long'),
+  rememberMe: z.boolean().optional(),
 });
 
 export const registerSchema = z
   .object({
     email: z.string().email('Invalid email address'),
-    password: z.string().min(6, 'Password must be at least 6 characters long'),
+    password: z
+      .string()
+      .min(6, 'Password must be at least 6 characters long')
+      .regex(/[a-zA-Z]/, 'Password must contain at least one letter')
+      .regex(/[0-9]/, 'Password must contain at least one number'),
     name: z.string().min(2, 'Name must be at least 2 characters long').optional(),
     fullname: z.string().min(2, 'Full Name must be at least 2 characters long').optional(),
     phone: z.string().optional(),
     nationality: z.string().optional(),
+    role: z.enum(['STUDENT', 'FACULTY', 'COUNSELOR', 'ADMIN', 'SUPER_ADMIN']).default('STUDENT'),
   })
   .refine((data) => !!(data.name || data.fullname), {
     message: 'Either name or fullname is required',
@@ -23,9 +29,38 @@ export const forgotPasswordSchema = z.object({
   email: z.string().email('Invalid email address'),
 });
 
-export const resetPasswordSchema = z.object({
-  token: z.string().min(1, 'Token is required'),
-  password: z.string().min(6, 'Password must be at least 6 characters long'),
+export const resetPasswordSchema = z
+  .object({
+    token: z.string().min(1, 'Token is required'),
+    password: z
+      .string()
+      .min(6, 'Password must be at least 6 characters long')
+      .regex(/[a-zA-Z]/, 'Password must contain at least one letter')
+      .regex(/[0-9]/, 'Password must contain at least one number'),
+    confirmPassword: z.string().min(1, 'Password confirmation is required'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'Current password is required'),
+    newPassword: z
+      .string()
+      .min(6, 'New password must be at least 6 characters long')
+      .regex(/[a-zA-Z]/, 'Password must contain at least one letter')
+      .regex(/[0-9]/, 'Password must contain at least one number'),
+    confirmPassword: z.string().min(1, 'Password confirmation is required'),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
+
+export const resendVerificationSchema = z.object({
+  email: z.string().email('Invalid email address'),
 });
 
 export const recommendationSchema = z.object({

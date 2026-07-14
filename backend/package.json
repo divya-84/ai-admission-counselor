@@ -24,8 +24,10 @@
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.2.0",
+    "nodemailer": "^9.0.3",
     "openai": "^6.46.0",
     "pdf-parse": "^2.4.5",
+    "resend": "^6.17.2",
     "winston": "^3.17.0",
     "zod": "^3.24.2"
   },
@@ -37,6 +39,7 @@
     "@types/jsonwebtoken": "^9.0.8",
     "@types/multer": "^2.2.0",
     "@types/node": "^22.13.4",
+    "@types/nodemailer": "^8.0.1",
     "@types/pdf-parse": "^1.1.5",
     "prisma": "^6.4.1",
     "tsx": "^4.19.3",

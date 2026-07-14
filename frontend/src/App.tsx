@@ -8,6 +8,8 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import VerifyEmail from './pages/VerifyEmail';
+import Unauthorized from './pages/Unauthorized';
+import ChangePassword from './pages/ChangePassword';
 import StudentDashboard from './pages/dashboards/StudentDashboard';
 import CounselorDashboard from './pages/dashboards/CounselorDashboard';
 import AdminDashboard from './pages/dashboards/AdminDashboard';
@@ -20,7 +22,7 @@ import Documents from './pages/Documents';
 import Appointments from './pages/Appointments';
 import NotificationsPage from './pages/NotificationsPage';
 import Analytics from './pages/Analytics';
-import { LogOut, Bell } from 'lucide-react';
+import { LogOut, Bell, Key } from 'lucide-react';
 
 function DashboardLayout() {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -81,6 +83,14 @@ function DashboardLayout() {
               </span>
             </div>
             <button
+              onClick={() => navigate('/change-password')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white transition-all text-xs font-semibold cursor-pointer"
+              title="Change Password"
+            >
+              <Key className="w-3.5 h-3.5" />
+              Password
+            </button>
+            <button
               onClick={handleLogout}
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white transition-all text-xs font-semibold cursor-pointer"
             >
@@ -101,9 +111,9 @@ function DashboardLayout() {
 function HomeRouter() {
   const { user } = useSelector((state: RootState) => state.auth);
 
-  if (user?.role === 'ADMIN') return <AdminDashboard />;
+  if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') return <AdminDashboard />;
   if (user?.role === 'COUNSELOR') return <CounselorDashboard />;
-  if (user?.role === 'HOD') return <HodDashboard />;
+  if (user?.role === 'HOD' || user?.role === 'FACULTY') return <HodDashboard />;
   return <StudentDashboard />;
 }
 
@@ -116,14 +126,16 @@ function App() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
+      <Route path="/unauthorized" element={<Unauthorized />} />
 
       {/* Protected Dashboard Layout Pages */}
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
           <Route path="/" element={<HomeRouter />} />
+          <Route path="/change-password" element={<ChangePassword />} />
 
           {/* Specific Role Routes (for explicit matching or testing) */}
-          <Route element={<ProtectedRoute allowedRoles={['STUDENT', 'ADMIN']} />}>
+          <Route element={<ProtectedRoute allowedRoles={['STUDENT', 'ADMIN', 'SUPER_ADMIN']} />}>
             <Route path="/student" element={<StudentDashboard />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/recommendations" element={<Recommendations />} />
@@ -133,16 +145,24 @@ function App() {
             <Route path="/appointments" element={<Appointments />} />
             <Route path="/notifications" element={<NotificationsPage />} />
           </Route>
-          <Route element={<ProtectedRoute allowedRoles={['COUNSELOR', 'ADMIN']} />}>
+          <Route element={<ProtectedRoute allowedRoles={['COUNSELOR', 'ADMIN', 'SUPER_ADMIN']} />}>
             <Route path="/counselor" element={<CounselorDashboard />} />
           </Route>
-          <Route element={<ProtectedRoute allowedRoles={['HOD', 'ADMIN']} />}>
+          <Route
+            element={<ProtectedRoute allowedRoles={['HOD', 'FACULTY', 'ADMIN', 'SUPER_ADMIN']} />}
+          >
             <Route path="/hod" element={<HodDashboard />} />
           </Route>
-          <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
+          <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'SUPER_ADMIN']} />}>
             <Route path="/admin" element={<AdminDashboard />} />
           </Route>
-          <Route element={<ProtectedRoute allowedRoles={['COUNSELOR', 'HOD', 'ADMIN']} />}>
+          <Route
+            element={
+              <ProtectedRoute
+                allowedRoles={['COUNSELOR', 'HOD', 'FACULTY', 'ADMIN', 'SUPER_ADMIN']}
+              />
+            }
+          >
             <Route path="/analytics" element={<Analytics />} />
           </Route>
         </Route>

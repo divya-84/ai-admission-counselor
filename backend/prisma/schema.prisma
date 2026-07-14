@@ -13,10 +13,12 @@ generator client {
 
 enum Role {
   USER
+  SUPER_ADMIN
   ADMIN
   COUNSELOR
   STUDENT
   HOD
+  FACULTY
 }
 
 enum AdmissionStatus {
@@ -51,18 +53,23 @@ enum AppointmentStatus {
 // ==========================================
 
 model User {
-  id                   String            @id @default(uuid())
-  email                String            @unique
-  password             String
-  name                 String?
-  role                 Role              @default(USER)
-  isEmailVerified      Boolean           @default(false) @map("is_email_verified")
-  verificationToken    String?           @map("verification_token")
-  resetPasswordToken   String?           @map("reset_password_token")
-  resetPasswordExpires DateTime?         @map("reset_password_expires")
-  refreshToken         String?           @map("refresh_token")
-  createdAt            DateTime          @default(now()) @map("created_at")
-  updatedAt            DateTime          @updatedAt @map("updated_at")
+  id                       String            @id @default(uuid())
+  email                    String            @unique
+  password                 String
+  name                     String?
+  role                     Role              @default(USER)
+  isEmailVerified          Boolean           @default(false) @map("is_email_verified")
+  verificationToken        String?           @map("verification_token")
+  verificationTokenExpires DateTime?         @map("verification_token_expires")
+  resetPasswordToken       String?           @map("reset_password_token")
+  resetPasswordExpires     DateTime?         @map("reset_password_expires")
+  refreshToken             String?           @map("refresh_token")
+  failedLoginAttempts      Int               @default(0) @map("failed_login_attempts")
+  lockedUntil              DateTime?         @map("locked_until")
+  lastLogin                DateTime?         @map("last_login")
+  passwordChangedAt        DateTime?         @map("password_changed_at")
+  createdAt                DateTime          @default(now()) @map("created_at")
+  updatedAt                DateTime          @updatedAt @map("updated_at")
 
   // Relations
   student       Student?
@@ -70,8 +77,24 @@ model User {
   notifications Notification[]
   sentChats     ChatMessage[]  @relation("SentChats")
   receivedChats ChatMessage[]  @relation("ReceivedChats")
+  sessions      UserSession[]
 
   @@map("users")
+}
+
+model UserSession {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  tokenHash  String   @unique @map("token_hash")
+  deviceInfo String?  @map("device_info")
+  ipAddress  String?  @map("ip_address")
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  lastActive DateTime @default(now()) @updatedAt @map("last_active")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_sessions")
 }
 
 model Student {

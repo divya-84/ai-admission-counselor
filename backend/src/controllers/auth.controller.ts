@@ -1,12 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
+import crypto from 'crypto';
 import { authService } from '../services/auth.service.js';
 import {
   loginSchema,
   registerSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  changePasswordSchema,
+  resendVerificationSchema,
 } from '@project/shared';
-import { AuthenticatedRequest } from '../middlewares/auth.middleware.js';
+import { AuthenticatedRequest } from '../middlewares/auth.interface.js';
 
 export class AuthController {
   async register(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -20,11 +23,13 @@ export class AuthController {
         name,
         phone: validatedData.phone,
         nationality: validatedData.nationality,
+        role: validatedData.role,
       });
 
       res.status(201).json({
         status: 'success',
-        message: 'Registration successful. Verification email has been sent.',
+        message:
+          'Registration successful. A verification email has been sent to activate your account.',
         data: user,
       });
     } catch (err) {
@@ -34,15 +39,32 @@ export class AuthController {
 
   async login(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { email, password } = loginSchema.parse(req.body);
-      const { user, accessToken, refreshToken } = await authService.login(email, password);
+      const { email, password, rememberMe } = loginSchema.parse(req.body);
+
+      // Extract client information for session audit log
+      const ipAddress = req.ip || req.socket.remoteAddress;
+      const deviceInfo = req.headers['user-agent'] || 'Unknown Device';
+
+      const { user, accessToken, refreshToken } = await authService.login(email, password, {
+        ipAddress,
+        deviceInfo,
+      });
+
+      // Set Access Token in HttpOnly cookie
+      res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 15 * 60 * 1000, // 15 minutes
+      });
 
       // Set Refresh Token in HttpOnly cookie
+      const isRememberMe = rememberMe === true;
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        maxAge: isRememberMe ? 7 * 24 * 60 * 60 * 1000 : undefined, // 7 days or browser session cookie
       });
 
       res.status(200).json({
@@ -50,7 +72,7 @@ export class AuthController {
         message: 'Login successful',
         data: {
           user,
-          accessToken,
+          accessToken, // Return for backward-compatibility if client wants to read it
         },
       });
     } catch (err) {
@@ -60,10 +82,16 @@ export class AuthController {
 
   async logout(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const userId = req.user?.id;
-      if (userId) {
-        await authService.logout(userId);
+      const refreshToken = req.cookies?.refreshToken;
+      if (refreshToken) {
+        await authService.logout(refreshToken);
       }
+
+      res.clearCookie('accessToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+      });
 
       res.clearCookie('refreshToken', {
         httpOnly: true,
@@ -73,7 +101,35 @@ export class AuthController {
 
       res.status(200).json({
         status: 'success',
-        message: 'Logged out successfully',
+        message: 'Logged out successfully from this session.',
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async logoutAll(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      if (userId) {
+        await authService.logoutAll(userId);
+      }
+
+      res.clearCookie('accessToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+      });
+
+      res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+      });
+
+      res.status(200).json({
+        status: 'success',
+        message: 'Logged out successfully from all active devices and sessions.',
       });
     } catch (err) {
       next(err);
@@ -88,12 +144,29 @@ export class AuthController {
         return;
       }
 
-      const { accessToken } = await authService.refresh(refreshToken);
+      const ipAddress = req.ip || req.socket.remoteAddress;
+      const deviceInfo = req.headers['user-agent'] || 'Unknown Device';
+
+      const tokens = await authService.refresh(refreshToken, { ipAddress, deviceInfo });
+
+      res.cookie('accessToken', tokens.accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 15 * 60 * 1000,
+      });
+
+      res.cookie('refreshToken', tokens.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
 
       res.status(200).json({
         status: 'success',
         data: {
-          accessToken,
+          accessToken: tokens.accessToken,
         },
       });
     } catch (err) {
@@ -103,13 +176,27 @@ export class AuthController {
 
   async verifyEmail(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const token = req.query.token as string;
+      const token = (req.query.token as string) || req.body.token;
       if (!token) {
-        res.status(400).json({ status: 'error', message: 'Token is required' });
+        res.status(400).json({ status: 'error', message: 'Verification token is required' });
         return;
       }
 
       const result = await authService.verifyEmail(token);
+      res.status(200).json({
+        status: 'success',
+        message: result.message,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async resendVerification(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { email } = resendVerificationSchema.parse(req.body);
+      const result = await authService.resendVerificationEmail(email);
+
       res.status(200).json({
         status: 'success',
         message: result.message,
@@ -141,6 +228,79 @@ export class AuthController {
       res.status(200).json({
         status: 'success',
         message: result.message,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async changePassword(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        res.status(401).json({ status: 'error', message: 'Unauthorized' });
+        return;
+      }
+
+      const validatedData = changePasswordSchema.parse(req.body);
+      const result = await authService.changePassword(userId, {
+        currentPassword: validatedData.currentPassword,
+        newPassword: validatedData.newPassword,
+      });
+
+      // Clear cookies since session is revoked (forces fresh login)
+      res.clearCookie('accessToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+      });
+      res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+      });
+
+      res.status(200).json({
+        status: 'success',
+        message: result.message,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getActiveSessions(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        res.status(401).json({ status: 'error', message: 'Unauthorized' });
+        return;
+      }
+
+      const sessions = await authService.getActiveSessions(userId);
+      res.status(200).json({
+        status: 'success',
+        data: {
+          sessions: sessions.map((s) => ({
+            id: s.id,
+            deviceInfo: s.deviceInfo,
+            ipAddress: s.ipAddress,
+            createdAt: s.createdAt,
+            lastActive: s.lastActive,
+            isCurrent: req.cookies?.refreshToken
+              ? crypto.createHash('sha256').update(req.cookies.refreshToken).digest('hex') ===
+                s.tokenHash
+              : false,
+          })),
+        },
       });
     } catch (err) {
       next(err);

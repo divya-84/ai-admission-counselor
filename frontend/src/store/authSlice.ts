@@ -5,7 +5,7 @@ interface User {
   id: string;
   email: string;
   name: string | null;
-  role: 'USER' | 'ADMIN' | 'COUNSELOR' | 'STUDENT' | 'HOD';
+  role: 'USER' | 'SUPER_ADMIN' | 'ADMIN' | 'COUNSELOR' | 'STUDENT' | 'HOD' | 'FACULTY';
   isEmailVerified: boolean;
 }
 

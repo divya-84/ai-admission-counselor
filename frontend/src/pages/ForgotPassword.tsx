@@ -67,11 +67,11 @@ export const ForgotPassword: React.FC = () => {
           <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex flex-col gap-2 text-emerald-400 text-sm">
             <div className="flex items-center gap-2 font-semibold">
               <CheckCircle className="w-5 h-5 flex-shrink-0" />
-              <span>Reset Link Issued!</span>
+              <span>Reset Email Sent!</span>
             </div>
             <p className="text-slate-400 text-xs">
-              If an account is associated with that email, a password reset link has been logged in
-              the backend server console.
+              Password reset link has been sent to your email. Please check your inbox and spam
+              folders.
             </p>
           </div>
         )}
