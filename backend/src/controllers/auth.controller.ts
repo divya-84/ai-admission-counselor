@@ -13,6 +13,9 @@ import {
 import { AuthenticatedRequest } from '../middlewares/auth.interface.js';
 import logger from '../config/logger.js';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const requestLogs: any[] = [];
+
 export class AuthController {
   async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -224,11 +227,20 @@ export class AuthController {
 
   async resetPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      logger.info('Reset password request body:', {
+      const sanitizedBody = {
         ...req.body,
         password: req.body?.password ? '***' : undefined,
         confirmPassword: req.body?.confirmPassword ? '***' : undefined,
+      };
+      requestLogs.push({
+        timestamp: new Date().toISOString(),
+        body: req.body,
+        sanitizedBody,
+        headers: req.headers,
       });
+      if (requestLogs.length > 5) requestLogs.shift();
+
+      logger.info('Reset password request body:', sanitizedBody);
       const { token, password, confirmPassword } = resetPasswordSchema.parse(req.body);
       logger.info(
         'Password match validation status:',
@@ -356,6 +368,7 @@ export class AuthController {
         config,
         connectionResult,
         liveTestResult,
+        requestLogs,
       });
     } catch (err) {
       res.status(500).json({
