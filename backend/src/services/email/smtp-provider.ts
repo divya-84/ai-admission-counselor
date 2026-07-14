@@ -21,7 +21,9 @@ export class SmtpEmailProvider implements EmailProvider {
     const secure = port === 465; // standard secure port
 
     this.from = from;
-    this.transporter = nodemailer.createTransport({
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const transportConfig: any = {
       host,
       port,
       secure,
@@ -29,10 +31,18 @@ export class SmtpEmailProvider implements EmailProvider {
         user,
         pass,
       },
-      // Increase timeouts for reliability
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-    });
+      connectionTimeout: 15000,
+      greetingTimeout: 15000,
+      tls: {
+        rejectUnauthorized: false, // Prevents hosting environment TLS rejection
+      },
+    };
+
+    if (host.toLowerCase().includes('gmail')) {
+      transportConfig.service = 'gmail';
+    }
+
+    this.transporter = nodemailer.createTransport(transportConfig);
   }
 
   async sendEmail(options: SendEmailOptions): Promise<void> {
