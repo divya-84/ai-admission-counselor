@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import { ZodError } from 'zod';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
@@ -79,6 +80,17 @@ interface HttpError extends Error {
 app.use(
   (err: HttpError, req: express.Request, res: express.Response, _next: express.NextFunction) => {
     logger.error(`Error: ${err.message}`, { stack: err.stack });
+
+    if (err instanceof ZodError) {
+      const firstIssue = err.errors[0];
+      const cleanMessage = firstIssue ? firstIssue.message : 'Validation failed';
+      res.status(400).json({
+        status: 'error',
+        message: cleanMessage,
+      });
+      return;
+    }
+
     res.status(err.status || 500).json({
       status: 'error',
       message: err.message || 'Internal Server Error',
