@@ -81,8 +81,10 @@ app.use(
   (err: HttpError, req: express.Request, res: express.Response, _next: express.NextFunction) => {
     logger.error(`Error: ${err.message}`, { stack: err.stack });
 
-    if (err instanceof ZodError) {
-      const firstIssue = err.errors[0];
+    if (err instanceof ZodError || err.name === 'ZodError') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const issues = (err as any).errors || (err as any).issues || [];
+      const firstIssue = issues[0];
       const cleanMessage = firstIssue ? firstIssue.message : 'Validation failed';
       res.status(400).json({
         status: 'error',
