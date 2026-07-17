@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store';
 import {
@@ -15,33 +15,50 @@ import {
 export const CounselorDashboard: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.auth);
 
-  // Mock data for counselor dashboard
-  const students = [
-    {
-      id: '1',
-      name: 'Alice Watson',
-      course: 'M.S. in Computer Science',
-      gpa: '3.90',
-      status: 'Pending Review',
-      country: 'USA',
-    },
-    {
-      id: '2',
-      name: 'Bob Carter',
-      course: 'B.B.A. in Marketing',
-      gpa: '3.65',
-      status: 'Documents Requested',
-      country: 'UK',
-    },
-    {
-      id: '3',
-      name: 'Diana Prince',
-      course: 'Ph.D. in Chemistry',
-      gpa: '3.95',
-      status: 'Approved',
-      country: 'Canada',
-    },
-  ];
+  const [students, setStudents] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      setIsLoading(true);
+      setError('');
+      try {
+        const response = await fetch('/api/counselor/students');
+        const result = await response.json();
+        if (response.ok && result.status === 'success') {
+          const mappedStudents = result.data.students.map((student: any) => ({
+            id: student.id,
+            name: student.user?.name || student.user?.email || 'Anonymous Student',
+            course: student.admissions?.[0]?.course?.name || 'Not Selected',
+            gpa: student.gpa ? parseFloat(student.gpa).toFixed(2) : 'N/A',
+            status:
+              student.admissions?.[0]?.status === 'APPLIED'
+                ? 'Pending Review'
+                : student.admissions?.[0]?.status || 'Pending Review',
+            country: student.preferredCountry || 'Not Specified',
+          }));
+          setStudents(mappedStudents);
+        } else {
+          setError(result.message || 'Failed to fetch student data');
+        }
+      } catch (err) {
+        setError('Error connecting to backend server');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStudents();
+  }, []);
+
+  const filteredStudents = students.filter(
+    (student) =>
+      student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.course.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.country.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   const appointments = [
     {
@@ -135,6 +152,8 @@ export const CounselorDashboard: React.FC = () => {
                 <input
                   type="text"
                   placeholder="Search students..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1 text-xs text-slate-300 placeholder-slate-600 focus:outline-none focus:border-indigo-500"
                 />
               </div>
@@ -153,41 +172,69 @@ export const CounselorDashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
-                  {students.map((student) => (
-                    <tr key={student.id} className="group hover:bg-slate-800/10 transition-colors">
-                      <td className="py-3.5 font-semibold text-white">{student.name}</td>
-                      <td className="py-3.5 text-slate-300">
-                        {student.course}
-                        <span className="block text-slate-500 text-xs">
-                          Destination: {student.country}
-                        </span>
-                      </td>
-                      <td className="py-3.5 text-center text-slate-300 font-mono">{student.gpa}</td>
-                      <td className="py-3.5">
-                        <span
-                          className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                            student.status === 'Approved'
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                              : student.status === 'Pending Review'
-                                ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
-                                : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                          }`}
-                        >
-                          {student.status}
-                        </span>
-                      </td>
-                      <td className="py-3.5 text-right">
-                        <div className="inline-flex gap-1.5">
-                          <button className="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition-all cursor-pointer">
-                            Review
-                          </button>
-                          <button className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all cursor-pointer">
-                            <MessageSquare className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-slate-500">
+                        <span className="inline-block animate-spin rounded-full h-5 w-5 border-2 border-slate-700 border-t-indigo-500 mr-2 align-middle"></span>
+                        Loading student records...
                       </td>
                     </tr>
-                  ))}
+                  ) : error ? (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-red-400 font-medium">
+                        {error}
+                      </td>
+                    </tr>
+                  ) : filteredStudents.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-slate-500">
+                        No registered students found.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredStudents.map((student) => (
+                      <tr
+                        key={student.id}
+                        className="group hover:bg-slate-800/10 transition-colors"
+                      >
+                        <td className="py-3.5 font-semibold text-white">{student.name}</td>
+                        <td className="py-3.5 text-slate-300">
+                          {student.course}
+                          <span className="block text-slate-500 text-xs">
+                            Destination: {student.country}
+                          </span>
+                        </td>
+                        <td className="py-3.5 text-center text-slate-300 font-mono">
+                          {student.gpa}
+                        </td>
+                        <td className="py-3.5">
+                          <span
+                            className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                              student.status === 'Approved'
+                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                : student.status === 'Pending Review' ||
+                                    student.status === 'UNDER_REVIEW' ||
+                                    student.status === 'APPLIED'
+                                  ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
+                                  : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                            }`}
+                          >
+                            {student.status}
+                          </span>
+                        </td>
+                        <td className="py-3.5 text-right">
+                          <div className="inline-flex gap-1.5">
+                            <button className="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition-all cursor-pointer">
+                              Review
+                            </button>
+                            <button className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all cursor-pointer">
+                              <MessageSquare className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
