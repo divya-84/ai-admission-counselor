@@ -10,7 +10,7 @@ import {
   changePasswordSchema,
   resendVerificationSchema,
 } from '@project/shared';
-import { AuthenticatedRequest } from '../middlewares/auth.interface.js';
+import type { AuthenticatedRequest } from '../middlewares/auth.interface.js';
 import logger from '../config/logger.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -240,19 +240,41 @@ export class AuthController {
       });
       if (requestLogs.length > 5) requestLogs.shift();
 
-      logger.info('Reset password request body:', sanitizedBody);
+      logger.info('Reset password - Received request body:', sanitizedBody);
+
+      // Perform validation check and log it
+      const parseResult = resetPasswordSchema.safeParse(req.body);
+      logger.info('Reset password - Zod validation success:', parseResult.success);
+      if (!parseResult.success) {
+        logger.warn('Reset password - Zod validation errors:', parseResult.error.format());
+      }
+
       const { token, password, confirmPassword } = resetPasswordSchema.parse(req.body);
+      logger.info(
+        `Reset password - Received token (prefix): ${token ? token.substring(0, 8) + '...' : 'none'}`,
+      );
       logger.info(
         'Password match validation status:',
         confirmPassword ? 'validated' : 'no-confirmation',
       );
+
       const result = await authService.resetPassword(token, password);
 
+      logger.info('Reset password - Password reset completed successfully.');
       res.status(200).json({
         status: 'success',
         message: result.message,
       });
     } catch (err) {
+      logger.error('Reset password - Controller error:', err);
+      const error = err as Error;
+      if (error.message === 'Reset token is invalid' || error.message === 'Reset token expired') {
+        res.status(400).json({
+          status: 'error',
+          message: error.message,
+        });
+        return;
+      }
       next(err);
     }
   }

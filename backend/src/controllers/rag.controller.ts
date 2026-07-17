@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express';
 import * as pdfParse from 'pdf-parse';
 import { ragService } from '../services/rag.service.js';
-import { AuthenticatedRequest } from '../middlewares/auth.middleware.js';
+import type { AuthenticatedRequest } from '../middlewares/auth.middleware.js';
 import logger from '../config/logger.js';
 
 export class RagController {

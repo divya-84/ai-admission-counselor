@@ -207,6 +207,7 @@ export class EmailService {
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const verifyUrl = `${frontendUrl}/verify-email?token=${token}`;
+    logger.info(`[EMAIL OUTBOX] Verification link for ${to}: ${verifyUrl}`);
 
     const contentHtml = `
       <p class="text">
@@ -263,6 +264,7 @@ export class EmailService {
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
+    logger.info(`[EMAIL OUTBOX] Password reset link for ${to}: ${resetUrl}`);
 
     const contentHtml = `
       <p class="text">

@@ -38,14 +38,15 @@ export class AuthService {
     nationality?: string;
     role?: Role;
   }) {
+    const normalizedEmail = data.email.toLowerCase().trim();
     logger.info(
-      `Processing registration request for: ${data.email} as role: ${data.role || Role.STUDENT}`,
+      `Processing registration request for email: [${data.email}] -> normalized: [${normalizedEmail}] as role: ${data.role || Role.STUDENT}`,
     );
 
     // Validate duplicate email
-    const existingUser = await usersRepository.findByEmail(data.email);
+    const existingUser = await usersRepository.findByEmail(normalizedEmail);
     if (existingUser) {
-      logger.warn(`Registration failed: Email already exists: ${data.email}`);
+      logger.warn(`Registration failed: Email already exists: ${normalizedEmail}`);
       throw new Error('Email is already registered');
     }
 
@@ -70,7 +71,7 @@ export class AuthService {
 
     // Create user and profile in a single repository transaction context
     const newUser = await usersRepository.create({
-      email: data.email,
+      email: normalizedEmail,
       password: hashedPassword,
       name: data.name,
       role: selectedRole,
@@ -98,11 +99,11 @@ export class AuthService {
     });
 
     try {
-      await emailService.sendVerificationEmail(data.email, data.name, rawVerificationToken);
-      logger.info(`Verification email sent to registered user: ${data.email}`);
+      await emailService.sendVerificationEmail(normalizedEmail, data.name, rawVerificationToken);
+      logger.info(`Verification email sent to registered user: ${normalizedEmail}`);
     } catch (err) {
       logger.error(
-        `Failed to send verification email during registration to ${data.email}. Error: ${(err as Error).message}`,
+        `Failed to send verification email during registration to ${normalizedEmail}. Error: ${(err as Error).message}`,
       );
     }
 
@@ -152,16 +153,22 @@ export class AuthService {
   }
 
   async resendVerificationEmail(email: string) {
-    logger.info(`Resend verification request for: ${email}`);
-    const user = await usersRepository.findByEmail(email);
+    const normalizedEmail = email.toLowerCase().trim();
+    logger.info(
+      `Resend verification request for email: [${email}] -> normalized: [${normalizedEmail}]`,
+    );
+    const user = await usersRepository.findByEmail(normalizedEmail);
 
     if (!user) {
       // Don't leak details, return success anyway
-      logger.warn(`Resend verification for non-existent email: ${email}`);
+      logger.warn(
+        `Resend verification failed: No user found for normalized email: ${normalizedEmail}`,
+      );
       return { message: 'If the account exists, a new verification link has been sent.' };
     }
 
     if (user.isEmailVerified) {
+      logger.warn(`Resend verification failed: Account is already verified: ${normalizedEmail}`);
       throw new Error('This account is already verified.');
     }
 
@@ -176,10 +183,10 @@ export class AuthService {
 
     try {
       await emailService.sendVerificationEmail(user.email, user.name || 'Applicant', rawToken);
-      logger.info(`Resent verification email successfully to ${email}`);
+      logger.info(`Resent verification email successfully to ${normalizedEmail}`);
     } catch (err) {
       logger.error(
-        `Resend verification email failed for ${email}. Error: ${(err as Error).message}`,
+        `Resend verification email failed for ${normalizedEmail}. Error: ${(err as Error).message}`,
       );
       throw new Error('Failed to send verification email. Please try again.');
     }
@@ -192,18 +199,21 @@ export class AuthService {
     password: string,
     clientInfo: { ipAddress?: string; deviceInfo?: string },
   ) {
-    logger.info(`Processing login request for email: ${email}`);
-    const user = await usersRepository.findByEmail(email);
+    const normalizedEmail = email.toLowerCase().trim();
+    logger.info(
+      `Processing login request for email: [${email}] -> normalized: [${normalizedEmail}]`,
+    );
+    const user = await usersRepository.findByEmail(normalizedEmail);
 
     if (!user) {
-      logger.warn(`Login failed: No user found with email: ${email}`);
+      logger.warn(`Login failed: No user found with normalized email: ${normalizedEmail}`);
       throw new Error('Invalid email or password');
     }
 
     // Check account lockout
     if (user.lockedUntil && user.lockedUntil > new Date()) {
       logger.warn(
-        `Login block: Account is temporarily locked for: ${email} until ${user.lockedUntil.toISOString()}`,
+        `Login block: Account is temporarily locked for: ${normalizedEmail} until ${user.lockedUntil.toISOString()}`,
       );
       const remainingTime = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
       throw new Error(
@@ -213,8 +223,9 @@ export class AuthService {
 
     // Verify Password
     const isMatch = await bcrypt.compare(password, user.password);
+
     if (!isMatch) {
-      logger.warn(`Login failed: Invalid password attempt for: ${email}`);
+      logger.warn(`Login failed: Invalid password attempt for: ${normalizedEmail}`);
       const updatedUser = await usersRepository.incrementFailedAttempts(user.id);
 
       if (updatedUser.failedLoginAttempts >= 5) {
@@ -222,7 +233,7 @@ export class AuthService {
         const lockedUntil = new Date(Date.now() + lockDurationMin * 60 * 1000);
         await usersRepository.lockAccount(user.id, lockedUntil);
         logger.error(
-          `Security Alert: Account locked for email: ${email} due to 5+ failed attempts.`,
+          `Security Alert: Account locked for email: ${normalizedEmail} due to 5+ failed attempts.`,
         );
 
         try {
@@ -242,7 +253,7 @@ export class AuthService {
 
     // Check if email is verified
     if (!user.isEmailVerified) {
-      logger.warn(`Login block: Email not verified for: ${email}`);
+      logger.warn(`Login block: Email not verified for: ${normalizedEmail}`);
       throw new Error('Please verify your email address to activate your account.');
     }
 
@@ -268,7 +279,7 @@ export class AuthService {
       expiresAt,
     });
 
-    logger.info(`Successful login for user: ${email} (ID: ${user.id}). Session created.`);
+    logger.info(`Successful login for user: ${normalizedEmail} (ID: ${user.id}). Session created.`);
 
     return {
       user: {
@@ -346,12 +357,17 @@ export class AuthService {
   }
 
   async forgotPassword(email: string) {
-    logger.info(`Forgot password request received for email: ${email}`);
-    const user = await usersRepository.findByEmail(email);
+    const normalizedEmail = email.toLowerCase().trim();
+    logger.info(
+      `Forgot password request received for email: [${email}] -> normalized: [${normalizedEmail}]`,
+    );
+    const user = await usersRepository.findByEmail(normalizedEmail);
 
     if (!user) {
       // Avoid leaking user existence
-      logger.warn(`Forgot password request for non-existent email: ${email}`);
+      logger.warn(
+        `Forgot password request failed: No user found for normalized email: ${normalizedEmail}`,
+      );
       return { message: 'If the email exists, a reset link has been sent.' };
     }
 
@@ -366,11 +382,15 @@ export class AuthService {
     logger.info(`Database updated with reset token for user ID: ${user.id}`);
 
     try {
-      await emailService.sendPasswordResetEmail(email, user.name || 'Applicant', rawToken);
-      logger.info(`Password reset email sent to: ${email}`);
+      await emailService.sendPasswordResetEmail(
+        normalizedEmail,
+        user.name || 'Applicant',
+        rawToken,
+      );
+      logger.info(`Password reset email sent to: ${normalizedEmail}`);
     } catch (err) {
       logger.error(
-        `Failed to send password reset email to ${email}. Error: ${(err as Error).message}`,
+        `Failed to send password reset email to ${normalizedEmail}. Error: ${(err as Error).message}`,
       );
       throw new Error('Failed to send password reset email. Please try again.');
     }
@@ -379,25 +399,43 @@ export class AuthService {
   }
 
   async resetPassword(token: string, newPassword: string) {
-    logger.info('Processing password reset request...');
+    logger.info('Reset password service - Processing password reset request...');
     const hashedToken = this.hashSha256(token);
     const prisma = (await import('../config/database.js')).default;
 
+    // 1. Query user by reset token first
+    logger.info('Reset password service - Looking up user by reset token...');
     const user = await prisma.user.findFirst({
       where: {
         resetPasswordToken: hashedToken,
-        resetPasswordExpires: { gt: new Date() },
       },
     });
 
+    // 2. Check if user found (Reset token is invalid)
     if (!user) {
-      logger.warn('Password reset failed: Invalid or expired reset token.');
-      throw new Error('Invalid or expired reset token');
+      logger.warn('Reset password service - User not found or token is invalid.');
+      throw new Error('Reset token is invalid');
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    logger.info(`Reset password service - User found: ID: ${user.id}, Email: ${user.email}`);
 
-    // Update user details
+    // 3. Check token expiration (Reset token expired)
+    if (user.resetPasswordExpires && user.resetPasswordExpires <= new Date()) {
+      logger.warn(
+        `Reset password service - Reset token expired at ${user.resetPasswordExpires.toISOString()} (current time: ${new Date().toISOString()})`,
+      );
+      throw new Error('Reset token expired');
+    }
+
+    // 4. Generate bcrypt hash for the new password
+    logger.info('Reset password service - Generating new bcrypt password hash...');
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    logger.info('Reset password service - New hash generated successfully.');
+
+    // 5. Update user password in the database
+    logger.info(
+      `Reset password service - Updating database credentials for user ID: ${user.id}...`,
+    );
     await usersRepository.update(user.id, {
       password: hashedPassword,
       resetPasswordToken: null,
@@ -408,7 +446,7 @@ export class AuthService {
     // Invalidate ALL sessions for this user (force fresh login)
     await sessionsRepository.deleteUserSessions(user.id);
 
-    logger.info(`Password reset complete and all sessions revoked for user ID: ${user.id}`);
+    logger.info(`Reset password complete and all sessions revoked for user ID: ${user.id}`);
 
     try {
       await emailService.sendPasswordChangedEmail(user.email, user.name || 'User');
@@ -416,7 +454,7 @@ export class AuthService {
       logger.error(`Failed to send password changed confirmation to: ${user.email}`);
     }
 
-    return { message: 'Password reset successfully. Please log in with your new credentials.' };
+    return { message: 'Password updated successfully.' };
   }
 
   async changePassword(userId: string, data: { currentPassword: string; newPassword: string }) {

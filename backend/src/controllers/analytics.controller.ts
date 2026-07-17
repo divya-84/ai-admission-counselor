@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express';
 import { analyticsService } from '../services/analytics.service.js';
-import { AuthenticatedRequest } from '../middlewares/auth.middleware.js';
+import type { AuthenticatedRequest } from '../middlewares/auth.middleware.js';
 
 export class AnalyticsController {
   // 1. Get Analytics Statistics

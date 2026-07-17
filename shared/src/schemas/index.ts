@@ -11,7 +11,8 @@ export const registerSchema = z
     email: z.string().email('Invalid email address'),
     password: z
       .string()
-      .min(6, 'Password must be at least 6 characters long')
+      .min(1, 'Password is required')
+      .min(8, 'Password must be at least 8 characters long')
       .regex(/[a-zA-Z]/, 'Password must contain at least one letter')
       .regex(/[0-9]/, 'Password must contain at least one number'),
     name: z.string().min(2, 'Name must be at least 2 characters long').optional(),
@@ -31,13 +32,14 @@ export const forgotPasswordSchema = z.object({
 
 export const resetPasswordSchema = z
   .object({
-    token: z.string().min(1, 'Token is required'),
+    token: z.string().min(1, 'Reset token is required'),
     password: z
       .string()
-      .min(6, 'Password must be at least 6 characters long')
+      .min(1, 'Password is required')
+      .min(8, 'Password must be at least 8 characters long')
       .regex(/[a-zA-Z]/, 'Password must contain at least one letter')
       .regex(/[0-9]/, 'Password must contain at least one number'),
-    confirmPassword: z.string().min(1, 'Password confirmation is required'),
+    confirmPassword: z.string().min(1, 'Confirm Password is required'),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match',
@@ -49,7 +51,8 @@ export const changePasswordSchema = z
     currentPassword: z.string().min(1, 'Current password is required'),
     newPassword: z
       .string()
-      .min(6, 'New password must be at least 6 characters long')
+      .min(1, 'New password is required')
+      .min(8, 'New password must be at least 8 characters long')
       .regex(/[a-zA-Z]/, 'Password must contain at least one letter')
       .regex(/[0-9]/, 'Password must contain at least one number'),
     confirmPassword: z.string().min(1, 'Password confirmation is required'),

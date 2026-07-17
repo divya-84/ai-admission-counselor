@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { chatService } from '../services/chat.service.js';
 import { speechService } from '../services/speech.service.js';
-import { AuthenticatedRequest } from '../middlewares/auth.middleware.js';
+import type { AuthenticatedRequest } from '../middlewares/auth.middleware.js';
 import logger from '../config/logger.js';
 
 export class ChatController {

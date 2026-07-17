@@ -1,0 +1,8 @@
+- [x] Update password validation schemas (reset, register, change password) in `shared/src/schemas/index.ts`
+- [x] Add detailed auditing/debugging logs in `auth.controller.ts` `resetPassword` method
+- [x] Refactor `resetPassword` method in `auth.service.ts` to separate invalid vs. expired token error messages, and add logs
+- [x] Modify `ResetPassword.tsx` to register `token` as a hidden input and update success state / button layout
+- [x] Build shared package and backend package to verify compilation
+- [x] Build frontend package to verify compilation
+- [x] Create and run verification script to verify password reset end-to-end
+- [x] Clean up logs and temporary files

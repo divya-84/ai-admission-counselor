@@ -4,7 +4,7 @@ import prisma from '../config/database.js';
 export class UsersRepository {
   async findByEmail(email: string): Promise<User | null> {
     return prisma.user.findUnique({
-      where: { email },
+      where: { email: email.toLowerCase().trim() },
       include: {
         student: true,
         counselor: true,

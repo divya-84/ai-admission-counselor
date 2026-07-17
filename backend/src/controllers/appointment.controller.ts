@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { bookAppointmentSchema } from '@project/shared';
 import { appointmentService } from '../services/appointment.service.js';
-import { AuthenticatedRequest } from '../middlewares/auth.middleware.js';
+import type { AuthenticatedRequest } from '../middlewares/auth.middleware.js';
 
 export class AppointmentController {
   // 1. Get Counselor List

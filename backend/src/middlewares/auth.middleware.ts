@@ -1,8 +1,8 @@
 import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { Role } from '@prisma/client';
-import { AuthenticatedRequest } from './auth.interface.js';
-export { AuthenticatedRequest };
+import type { AuthenticatedRequest } from './auth.interface.js';
+export type { AuthenticatedRequest };
 import logger from '../config/logger.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-jwt-key-replace-in-production';

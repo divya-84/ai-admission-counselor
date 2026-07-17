@@ -61,7 +61,7 @@ export const ResetPassword: React.FC = () => {
       setSuccess(true);
       setTimeout(() => {
         navigate('/login');
-      }, 4000);
+      }, 2000);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'An error occurred during password reset';
@@ -91,15 +91,21 @@ export const ResetPassword: React.FC = () => {
 
         {/* Success Alert */}
         {success && (
-          <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex flex-col gap-2 text-emerald-400 text-sm">
+          <div className="p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex flex-col gap-4 text-emerald-400 text-sm">
             <div className="flex items-center gap-2 font-semibold">
               <CheckCircle className="w-5 h-5 flex-shrink-0" />
-              <span>Password Updated!</span>
+              <span>Password updated successfully.</span>
             </div>
             <p className="text-slate-400 text-xs">
-              Your password has been successfully reset. You will be redirected to the login page
-              shortly.
+              Your password has been successfully reset. You will be redirected to the login page in
+              2 seconds.
             </p>
+            <Link
+              to="/login"
+              className="w-full inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-lg hover:shadow-indigo-500/20 transition-all cursor-pointer text-sm"
+            >
+              Go to Login
+            </Link>
           </div>
         )}
 
@@ -114,6 +120,7 @@ export const ResetPassword: React.FC = () => {
         {/* Form */}
         {!success && token && (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <input type="hidden" {...register('token')} />
             <div className="space-y-1">
               <label className="text-slate-300 text-xs font-semibold uppercase tracking-wider">
                 New Password
