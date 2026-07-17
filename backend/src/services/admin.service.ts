@@ -102,10 +102,36 @@ export class AdminService {
 
   async updateUserRole(id: string, role: Role) {
     logger.info(`[Admin Console]: Updating user role for ${id} to ${role}`);
-    return prisma.user.update({
+
+    const updatedUser = await prisma.user.update({
       where: { id },
       data: { role },
     });
+
+    // Automatically provision profile records if missing to avoid constraints issues
+    if (role === Role.COUNSELOR) {
+      await prisma.counselor.upsert({
+        where: { userId: id },
+        update: {},
+        create: {
+          userId: id,
+          specialization: 'General Counseling',
+          bio: 'Admissions advisor.',
+        },
+      });
+    } else if (role === Role.STUDENT) {
+      await prisma.student.upsert({
+        where: { userId: id },
+        update: {},
+        create: {
+          userId: id,
+          academicLevel: 'High School',
+          preferredCountry: 'USA',
+        },
+      });
+    }
+
+    return updatedUser;
   }
 
   async deleteUser(id: string) {
