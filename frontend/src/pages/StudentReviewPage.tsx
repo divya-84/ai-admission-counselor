@@ -45,8 +45,9 @@ export const StudentReviewPage: React.FC = () => {
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+      const activeToken = token || localStorage.getItem('token');
+      if (activeToken) {
+        headers['Authorization'] = `Bearer ${activeToken}`;
       }
 
       const res = await fetch(`/api/counselor/students/${studentId}`, {
@@ -80,8 +81,9 @@ export const StudentReviewPage: React.FC = () => {
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+      const activeToken = token || localStorage.getItem('token');
+      if (activeToken) {
+        headers['Authorization'] = `Bearer ${activeToken}`;
       }
 
       const notesToSubmit =

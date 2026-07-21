@@ -17,10 +17,30 @@ interface AuthState {
   error: string | null;
 }
 
+const getStoredUser = (): User | null => {
+  try {
+    const item = localStorage.getItem('user');
+    return item ? JSON.parse(item) : null;
+  } catch {
+    return null;
+  }
+};
+
+const getStoredToken = (): string | null => {
+  try {
+    return localStorage.getItem('token');
+  } catch {
+    return null;
+  }
+};
+
+const storedUser = getStoredUser();
+const storedToken = getStoredToken();
+
 const initialState: AuthState = {
-  user: null,
-  token: null,
-  isAuthenticated: false,
+  user: storedUser,
+  token: storedToken,
+  isAuthenticated: !!(storedUser && storedToken),
   isLoading: false,
   error: null,
 };
@@ -34,12 +54,24 @@ const authSlice = createSlice({
       state.token = action.payload.accessToken;
       state.isAuthenticated = true;
       state.error = null;
+      try {
+        localStorage.setItem('user', JSON.stringify(action.payload.user));
+        localStorage.setItem('token', action.payload.accessToken);
+      } catch (e) {
+        console.warn('Failed to save auth to localStorage:', e);
+      }
     },
     clearCredentials: (state) => {
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
       state.error = null;
+      try {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      } catch (e) {
+        console.warn('Failed to clear auth from localStorage:', e);
+      }
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;

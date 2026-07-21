@@ -62,8 +62,9 @@ export const CounselorDashboard: React.FC = () => {
         const headers: Record<string, string> = {
           'Content-Type': 'application/json',
         };
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
+        const activeToken = token || localStorage.getItem('token');
+        if (activeToken) {
+          headers['Authorization'] = `Bearer ${activeToken}`;
         }
 
         const response = await fetch('/api/counselor/students', {
@@ -108,8 +109,9 @@ export const CounselorDashboard: React.FC = () => {
         const headers: Record<string, string> = {
           'Content-Type': 'application/json',
         };
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
+        const activeToken = token || localStorage.getItem('token');
+        if (activeToken) {
+          headers['Authorization'] = `Bearer ${activeToken}`;
         }
 
         const response = await fetch('/api/counselor/courses', {
@@ -144,8 +146,9 @@ export const CounselorDashboard: React.FC = () => {
         const headers: Record<string, string> = {
           'Content-Type': 'application/json',
         };
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
+        const activeToken = token || localStorage.getItem('token');
+        if (activeToken) {
+          headers['Authorization'] = `Bearer ${activeToken}`;
         }
         const res = await fetch(`/api/counselor/students/${targetId}`, {
           headers,
