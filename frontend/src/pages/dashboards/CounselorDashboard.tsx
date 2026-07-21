@@ -130,7 +130,7 @@ export const CounselorDashboard: React.FC = () => {
   }, [token]);
 
   // Handler for navigating to student review page
-  const handleReviewStudent = (student: any) => {
+  const handleReviewStudent = async (student: any) => {
     const targetId =
       student.id ||
       student._id ||
@@ -140,6 +140,24 @@ export const CounselorDashboard: React.FC = () => {
     console.info('Review button clicked for student ID:', targetId, student);
     if (targetId) {
       setSelectedStudent(student);
+      try {
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        const res = await fetch(`/api/counselor/students/${targetId}`, {
+          headers,
+          credentials: 'include',
+        });
+        const result = await res.json();
+        if (res.ok && result.status === 'success' && result.data?.student) {
+          setSelectedStudent(result.data.student);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch detailed student record:', err);
+      }
       navigate(`/counselor/students/${targetId}`);
     } else {
       console.error('Cannot navigate: student ID is missing in student object', student);
