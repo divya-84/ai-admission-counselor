@@ -132,7 +132,9 @@ export const CounselorDashboard: React.FC = () => {
   }, [token]);
 
   // Handler for navigating to student review page
-  const handleReviewStudent = async (student: any) => {
+  const handleReviewStudent = (e: React.MouseEvent, student: any) => {
+    e.preventDefault();
+    e.stopPropagation();
     const targetId =
       student.id ||
       student._id ||
@@ -142,25 +144,6 @@ export const CounselorDashboard: React.FC = () => {
     console.info('Review button clicked for student ID:', targetId, student);
     if (targetId) {
       setSelectedStudent(student);
-      try {
-        const headers: Record<string, string> = {
-          'Content-Type': 'application/json',
-        };
-        const activeToken = token || localStorage.getItem('token');
-        if (activeToken) {
-          headers['Authorization'] = `Bearer ${activeToken}`;
-        }
-        const res = await fetch(`/api/counselor/students/${targetId}`, {
-          headers,
-          credentials: 'include',
-        });
-        const result = await res.json();
-        if (res.ok && result.status === 'success' && result.data?.student) {
-          setSelectedStudent(result.data.student);
-        }
-      } catch (err) {
-        console.warn('Failed to fetch detailed student record:', err);
-      }
       navigate(`/counselor/students/${targetId}`);
     } else {
       console.error('Cannot navigate: student ID is missing in student object', student);
@@ -530,8 +513,8 @@ export const CounselorDashboard: React.FC = () => {
                         <td className="py-3.5 text-right">
                           <div className="inline-flex gap-1.5">
                             <button
-                              onClick={() => handleReviewStudent(student)}
-                              className="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition-all cursor-pointer"
+                              onClick={(e) => handleReviewStudent(e, student)}
+                              className="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition-all cursor-pointer z-10 relative"
                             >
                               Review
                             </button>
