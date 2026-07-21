@@ -16,7 +16,7 @@ emailService.verifyConnection().catch((err) => {
   logger.error(`Initial email provider health check failed: ${err.message}`);
 });
 
-const server = app.listen(PORT, () => {
+const server = app.listen(Number(PORT), '0.0.0.0', () => {
   logger.info(`Server is running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
 });
 
