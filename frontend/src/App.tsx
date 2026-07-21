@@ -22,6 +22,8 @@ import Documents from './pages/Documents';
 import Appointments from './pages/Appointments';
 import NotificationsPage from './pages/NotificationsPage';
 import Analytics from './pages/Analytics';
+import StudentProfile from './pages/StudentProfile';
+import StudentReviewPage from './pages/StudentReviewPage';
 import { LogOut, Bell, Key } from 'lucide-react';
 
 function DashboardLayout() {
@@ -137,6 +139,7 @@ function App() {
           {/* Specific Role Routes (for explicit matching or testing) */}
           <Route element={<ProtectedRoute allowedRoles={['STUDENT', 'ADMIN', 'SUPER_ADMIN']} />}>
             <Route path="/student" element={<StudentDashboard />} />
+            <Route path="/profile" element={<StudentProfile />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/recommendations" element={<Recommendations />} />
             <Route path="/eligibility" element={<Eligibility />} />
@@ -147,6 +150,8 @@ function App() {
           </Route>
           <Route element={<ProtectedRoute allowedRoles={['COUNSELOR', 'ADMIN', 'SUPER_ADMIN']} />}>
             <Route path="/counselor" element={<CounselorDashboard />} />
+            <Route path="/counselor/students/:studentId" element={<StudentReviewPage />} />
+            <Route path="/counselor/students/id/:studentId" element={<StudentReviewPage />} />
           </Route>
           <Route
             element={<ProtectedRoute allowedRoles={['HOD', 'FACULTY', 'ADMIN', 'SUPER_ADMIN']} />}

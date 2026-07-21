@@ -18,6 +18,7 @@ import notificationRoutes from './routes/notification.routes.js';
 import analyticsRoutes from './routes/analytics.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import counselorRoutes from './routes/counselor.routes.js';
+import studentRoutes from './routes/student.routes.js';
 
 dotenv.config();
 
@@ -58,6 +59,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/counselor', counselorRoutes);
+app.use('/api/student', studentRoutes);
 
 // Request logging middleware
 app.use((req, res, next) => {

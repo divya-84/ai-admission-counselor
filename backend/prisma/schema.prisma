@@ -104,6 +104,9 @@ model Student {
   dateOfBirth      DateTime?            @map("date_of_birth")
   gender           String?
   address          String?
+  city             String?
+  state            String?
+  pinCode          String?
   nationality      String?
   academicLevel    String?              @map("academic_level")
   highSchoolName   String?              @map("high_school_name")
@@ -111,6 +114,18 @@ model Student {
   testScores       Json?                @map("test_scores") // e.g. { "sat": 1450, "ielts": 7.5 }
   preferredCountry String?              @map("preferred_country")
   preferredIntake  String?              @map("preferred_intake")
+  
+  // Additional registration fields
+  preferredCampus  String?              @map("preferred_campus")
+  qualification    String?
+  boardUniversity  String?              @map("board_university")
+  passingYear      Int?                 @map("passing_year")
+  percentage       Decimal?             @db.Decimal(5, 2)
+  backlogs         Int?                 @default(0)
+  fatherName       String?              @map("father_name")
+  motherName       String?              @map("mother_name")
+  guardianContact  String?              @map("guardian_contact")
+  
   createdAt        DateTime             @default(now()) @map("created_at")
   updatedAt        DateTime             @updatedAt @map("updated_at")
 

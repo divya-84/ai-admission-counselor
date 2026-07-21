@@ -78,9 +78,17 @@ export const StudentDashboard: React.FC = () => {
               here.
             </p>
           </div>
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-sm font-semibold">
-            <Sparkles className="w-4 h-4" />
-            GPA: 3.85 (Academic Level: Graduate)
+          <div className="flex flex-col items-end gap-2 shrink-0">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-sm font-semibold">
+              <Sparkles className="w-4 h-4" />
+              GPA: 3.85 (Academic Level: Graduate)
+            </div>
+            <button
+              onClick={() => navigate('/profile')}
+              className="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md transition-all cursor-pointer"
+            >
+              Complete Registration Profile
+            </button>
           </div>
         </div>
 
