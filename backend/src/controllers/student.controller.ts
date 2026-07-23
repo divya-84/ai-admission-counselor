@@ -34,9 +34,20 @@ export class StudentController {
         return;
       }
 
+      const { getCourseRecommendation } = await import('../services/recommendation.helper.js');
+      const recommendedCourse = getCourseRecommendation(
+        student.twelfthPCMPercentage ? Number(student.twelfthPCMPercentage) : null,
+        student.jeePercentile ? Number(student.jeePercentile) : null
+      );
+
       res.status(200).json({
         status: 'success',
-        data: { student },
+        data: {
+          student: {
+            ...student,
+            recommendedCourse,
+          }
+        },
       });
     } catch (err) {
       logger.error('Error fetching student profile:', err);
@@ -86,6 +97,11 @@ export class StudentController {
         motherName,
         guardianContact,
         fullname,
+        tenthPercentage,
+        twelfthPercentage,
+        twelfthPCMPercentage,
+        jeePercentile,
+        location,
       } = req.body;
 
       // Update student profile
@@ -120,6 +136,11 @@ export class StudentController {
           motherName: motherName !== undefined ? motherName : student.motherName,
           guardianContact:
             guardianContact !== undefined ? guardianContact : student.guardianContact,
+          tenthPercentage: tenthPercentage !== undefined ? Number(tenthPercentage) : student.tenthPercentage,
+          twelfthPercentage: twelfthPercentage !== undefined ? Number(twelfthPercentage) : student.twelfthPercentage,
+          twelfthPCMPercentage: twelfthPCMPercentage !== undefined ? Number(twelfthPCMPercentage) : student.twelfthPCMPercentage,
+          jeePercentile: jeePercentile !== undefined ? Number(jeePercentile) : student.jeePercentile,
+          location: location !== undefined ? location : student.location,
         },
       });
 
@@ -131,9 +152,20 @@ export class StudentController {
         });
       }
 
+      const { getCourseRecommendation } = await import('../services/recommendation.helper.js');
+      const recommendedCourse = getCourseRecommendation(
+        updatedStudent.twelfthPCMPercentage ? Number(updatedStudent.twelfthPCMPercentage) : null,
+        updatedStudent.jeePercentile ? Number(updatedStudent.jeePercentile) : null
+      );
+
       res.status(200).json({
         status: 'success',
-        data: { student: updatedStudent },
+        data: {
+          student: {
+            ...updatedStudent,
+            recommendedCourse,
+          }
+        },
       });
     } catch (err) {
       logger.error('Error updating student profile:', err);

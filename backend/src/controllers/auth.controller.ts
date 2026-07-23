@@ -29,6 +29,13 @@ export class AuthController {
         phone: validatedData.phone,
         nationality: validatedData.nationality,
         role: validatedData.role,
+        fatherName: validatedData.fatherName,
+        motherName: validatedData.motherName,
+        location: validatedData.location,
+        tenthPercentage: validatedData.tenthPercentage,
+        twelfthPercentage: validatedData.twelfthPercentage,
+        twelfthPCMPercentage: validatedData.twelfthPCMPercentage,
+        jeePercentile: validatedData.jeePercentile,
       });
 
       res.status(201).json({

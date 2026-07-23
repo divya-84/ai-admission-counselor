@@ -11,7 +11,94 @@ export class CounselorController {
         `Counselor listStudents called by user: ${req.user?.email} (ID: ${req.user?.id})`,
       );
 
+      const search = (req.query.search as string) || '';
+      const filter = (req.query.filter as string) || '';
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const skip = (page - 1) * limit;
+
+      // Construct Prisma where clause
+      const where: any = {};
+
+      // 1. Apply Status/Date Filters
+      if (filter) {
+        const filterUpper = filter.toUpperCase();
+        if (filterUpper === 'TODAY') {
+          const startOfToday = new Date();
+          startOfToday.setHours(0, 0, 0, 0);
+          where.createdAt = { gte: startOfToday };
+        } else if (filterUpper === 'PENDING') {
+          where.admissions = {
+            some: {
+              status: { in: ['APPLIED', 'UNDER_REVIEW'] },
+            },
+          };
+        } else if (filterUpper === 'APPROVED') {
+          where.admissions = {
+            some: {
+              status: 'APPROVED',
+            },
+          };
+        } else if (filterUpper === 'REJECTED') {
+          where.admissions = {
+            some: {
+              status: 'REJECTED',
+            },
+          };
+        } else if (filterUpper === 'HOLD') {
+          where.admissions = {
+            some: {
+              status: 'HOLD',
+            },
+          };
+        }
+      }
+
+      // 2. Apply Search Queries (Name, Email, Mobile/Phone, Course)
+      if (search) {
+        where.AND = [
+          ...(where.AND || []),
+          {
+            OR: [
+              {
+                user: {
+                  name: { contains: search, mode: 'insensitive' },
+                },
+              },
+              {
+                user: {
+                  email: { contains: search, mode: 'insensitive' },
+                },
+              },
+              {
+                phone: { contains: search, mode: 'insensitive' },
+              },
+              {
+                admissions: {
+                  some: {
+                    OR: [
+                      {
+                        course: {
+                          name: { contains: search, mode: 'insensitive' },
+                        },
+                      },
+                      {
+                        notes: { contains: search, mode: 'insensitive' },
+                      },
+                    ],
+                  },
+                },
+              },
+            ],
+          },
+        ];
+      }
+
+      // 3. Query DB with pagination
+      const total = await prisma.student.count({ where });
+
       const students = await prisma.student.findMany({
+        where,
         include: {
           user: {
             select: {
@@ -48,10 +135,19 @@ export class CounselorController {
         orderBy: {
           createdAt: 'desc',
         },
+        skip,
+        take: limit,
       });
+
+      const { getCourseRecommendation } = await import('../services/recommendation.helper.js');
 
       const formattedStudents = students.map((student) => {
         const firstAdmission = student.admissions[0];
+        const recommendedCourse = getCourseRecommendation(
+          student.twelfthPCMPercentage ? Number(student.twelfthPCMPercentage) : null,
+          student.jeePercentile ? Number(student.jeePercentile) : null
+        );
+
         return {
           ...student,
           _id: student.id,
@@ -60,13 +156,23 @@ export class CounselorController {
           name: student.user?.name || student.user?.email || 'Anonymous Student',
           email: student.user?.email || '',
           status: firstAdmission?.status || 'PENDING',
+          recommendedCourse,
         };
       });
 
-      logger.info(`Retrieved ${formattedStudents.length} students from the database.`);
+      logger.info(`Retrieved ${formattedStudents.length} students (total ${total}) from database.`);
+      
       res.status(200).json({
         status: 'success',
-        data: { students: formattedStudents },
+        data: { 
+          students: formattedStudents,
+          pagination: {
+            total,
+            page,
+            limit,
+            pages: Math.ceil(total / limit),
+          }
+        },
       });
     } catch (err) {
       logger.error('Error fetching students for counselor dashboard:', err);
@@ -176,12 +282,19 @@ export class CounselorController {
         }
       }
 
+      const { getCourseRecommendation } = await import('../services/recommendation.helper.js');
+      const recommendedCourse = getCourseRecommendation(
+        student.twelfthPCMPercentage ? Number(student.twelfthPCMPercentage) : null,
+        student.jeePercentile ? Number(student.jeePercentile) : null
+      );
+
       const formattedStudent = {
         ...student,
         _id: student.id,
         id: student.id,
         name: student.user?.name || 'Anonymous Student',
         email: student.user?.email || '',
+        recommendedCourse,
       };
 
       res.status(200).json({

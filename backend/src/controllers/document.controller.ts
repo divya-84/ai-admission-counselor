@@ -1,7 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import prisma from '../config/database.js';
 import { ocrService } from '../services/ocr.service.js';
 import logger from '../config/logger.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 interface CustomRequest extends Request {
   user?: {
@@ -44,6 +50,16 @@ export class DocumentController {
         return;
       }
 
+      // Save file to disk
+      const uploadDir = path.join(__dirname, '../../storage/uploads');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      const uniqueFilename = `${Date.now()}-${file.originalname.replace(/\s+/g, '_')}`;
+      const filePath = path.join(uploadDir, uniqueFilename);
+      fs.writeFileSync(filePath, file.buffer);
+      const fileUrl = `/uploads/${uniqueFilename}`;
+
       // Execute OCR Extraction on file buffer
       logger.info(`Running OCR extraction on ${file.originalname} for ${documentType}`);
       const ocrResult = await ocrService.extractMetadata(
@@ -59,7 +75,7 @@ export class DocumentController {
           studentId: student.id,
           type: documentType,
           name: file.originalname,
-          url: `/uploads/${file.filename || 'mock-file.pdf'}`,
+          url: fileUrl,
           verificationStatus: 'PENDING',
           notes: JSON.stringify(ocrResult.parsedData),
         },
@@ -162,6 +178,73 @@ export class DocumentController {
         data: {
           document: updatedDoc,
         },
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // 4. Upload Institutional Document (Fee Structure, etc.)
+  async uploadGlobalDocument(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const file = req.file;
+      const { name } = req.body; // e.g. "academic_fee", "hostel_fee"
+
+      if (!file) {
+        res.status(400).json({ status: 'error', message: 'No file uploaded' });
+        return;
+      }
+
+      if (!name) {
+        res.status(400).json({ status: 'error', message: 'Document name identifier is required' });
+        return;
+      }
+
+      // Save file to disk
+      const uploadDir = path.join(__dirname, '../../storage/uploads');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      const uniqueFilename = `${Date.now()}-${file.originalname.replace(/\s+/g, '_')}`;
+      const filePath = path.join(uploadDir, uniqueFilename);
+      fs.writeFileSync(filePath, file.buffer);
+      const fileUrl = `/uploads/${uniqueFilename}`;
+
+      // Upsert into InstitutionDocument
+      const doc = await prisma.institutionDocument.upsert({
+        where: { name },
+        update: {
+          fileName: file.originalname,
+          url: fileUrl,
+        },
+        create: {
+          name,
+          fileName: file.originalname,
+          url: fileUrl,
+        },
+      });
+
+      logger.info(`Global institutional document ${name} uploaded: ${fileUrl}`);
+
+      res.status(201).json({
+        status: 'success',
+        data: { document: doc },
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // 5. List all Institutional Documents
+  async listGlobalDocuments(req: CustomRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const docs = await prisma.institutionDocument.findMany({
+        orderBy: { createdAt: 'desc' },
+      });
+
+      res.status(200).json({
+        status: 'success',
+        data: { documents: docs },
       });
     } catch (err) {
       next(err);

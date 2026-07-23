@@ -8,9 +8,7 @@ import {
   Clock,
   Sparkles,
   Search,
-  UserCheck,
   ClipboardList,
-  MessageSquare,
   X,
   Mail,
   Phone,
@@ -31,10 +29,20 @@ export const CounselorDashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [filter, setFilter] = useState<string>('');
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
 
   // Selected Student for Modal Review
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState<'profile' | 'documents' | 'ai' | 'offer'>('profile');
+
+  // Global Brochure Upload State
+  const [brochureFile, setBrochureFile] = useState<File | null>(null);
+  const [brochureName, setBrochureName] = useState<string>('academic_fee');
+  const [isUploadingBrochure, setIsUploadingBrochure] = useState<boolean>(false);
+  const [brochureSuccess, setBrochureSuccess] = useState<string>('');
+  const [brochureError, setBrochureError] = useState<string>('');
 
   // Course Offer Form State
   const [selectedCourseId, setSelectedCourseId] = useState<string>('');
@@ -67,7 +75,14 @@ export const CounselorDashboard: React.FC = () => {
           headers['Authorization'] = `Bearer ${activeToken}`;
         }
 
-        const response = await fetch('/api/counselor/students', {
+        const params = new URLSearchParams({
+          search: searchTerm,
+          filter,
+          page: String(page),
+          limit: '10',
+        });
+
+        const response = await fetch(`/api/counselor/students?${params.toString()}`, {
           headers,
           credentials: 'include',
         });
@@ -84,15 +99,17 @@ export const CounselorDashboard: React.FC = () => {
                 student.name || student.user?.name || student.user?.email || 'Anonymous Student',
               formattedCourse: student.admissions?.[0]?.course?.name || 'Not Selected',
               formattedGpa: student.gpa ? parseFloat(student.gpa).toFixed(2) : 'N/A',
-              formattedStatus:
-                student.status ||
-                (student.admissions?.[0]?.status === 'APPLIED'
-                  ? 'Pending Review'
-                  : student.admissions?.[0]?.status || 'Pending Review'),
+              formattedStatus: student.status || 'Pending Review',
               formattedCountry: student.preferredCountry || 'Not Specified',
+              twelfthPCM: student.twelfthPCMPercentage ? Number(student.twelfthPCMPercentage) : 0,
+              jee: student.jeePercentile ? Number(student.jeePercentile) : 0,
+              recommendedCourse: student.recommendedCourse || 'Currently Not Eligible',
             };
           });
           setStudents(mappedStudents);
+          if (result.data.pagination) {
+            setTotalPages(result.data.pagination.pages || 1);
+          }
         } else {
           setError(result.message || 'Failed to fetch student data');
         }
@@ -129,7 +146,7 @@ export const CounselorDashboard: React.FC = () => {
 
     fetchStudents();
     fetchCourses();
-  }, [token]);
+  }, [token, searchTerm, filter, page]);
 
   // Handler for navigating to student review page
   const handleReviewStudent = (e: React.MouseEvent, student: any) => {
@@ -143,10 +160,49 @@ export const CounselorDashboard: React.FC = () => {
       student.admissions?.[0]?.studentId;
     console.info('Review button clicked for student ID:', targetId, student);
     if (targetId) {
-      setSelectedStudent(student);
       navigate(`/counselor/students/${targetId}`);
     } else {
       console.error('Cannot navigate: student ID is missing in student object', student);
+    }
+  };
+
+  const handleBrochureUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!brochureFile) {
+      setBrochureError('Please select a PDF file first.');
+      return;
+    }
+    setIsUploadingBrochure(true);
+    setBrochureSuccess('');
+    setBrochureError('');
+
+    const formData = new FormData();
+    formData.append('file', brochureFile);
+    formData.append('name', brochureName);
+
+    try {
+      const activeToken = token || localStorage.getItem('token');
+      const headers: Record<string, string> = {};
+      if (activeToken) {
+        headers['Authorization'] = `Bearer ${activeToken}`;
+      }
+
+      const res = await fetch('/api/documents/global-upload', {
+        method: 'POST',
+        headers,
+        body: formData,
+      });
+      const result = await res.json();
+      if (res.ok && result.status === 'success') {
+        setBrochureSuccess('Brochure uploaded successfully!');
+        setBrochureFile(null);
+      } else {
+        setBrochureError(result.message || 'Brochure upload failed.');
+      }
+    } catch {
+      setBrochureError('Network error uploading brochure.');
+    } finally {
+      setIsUploadingBrochure(false);
     }
   };
 
@@ -172,12 +228,7 @@ export const CounselorDashboard: React.FC = () => {
     }
   }, [selectedStudent]);
 
-  const filteredStudents = students.filter(
-    (student) =>
-      student.formattedName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.formattedCourse.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.formattedCountry.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const filteredStudents = students; // Querying dynamically now, no need for client-side filtering!
 
   const appointments = [
     {
@@ -429,20 +480,34 @@ export const CounselorDashboard: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Assigned Students Table */}
           <div className="lg:col-span-2 bg-slate-900/45 border border-slate-800 rounded-2xl p-6 space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
                 <ClipboardList className="w-5 h-5 text-indigo-400" />
                 Assigned Students List
               </h2>
-              <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                <input
-                  type="text"
-                  placeholder="Search students..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1 text-xs text-slate-300 placeholder-slate-600 focus:outline-none focus:border-indigo-500"
-                />
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                <div className="relative flex-1 sm:flex-none">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <input
+                    type="text"
+                    placeholder="Search name, email, phone..."
+                    value={searchTerm}
+                    onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+                    className="w-full sm:w-48 bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-350 placeholder-slate-650 focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <select
+                  value={filter}
+                  onChange={(e) => { setFilter(e.target.value); setPage(1); }}
+                  className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-350 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                >
+                  <option value="">All Applications</option>
+                  <option value="PENDING">Pending Review</option>
+                  <option value="APPROVED">Approved</option>
+                  <option value="REJECTED">Rejected</option>
+                  <option value="HOLD">Hold</option>
+                  <option value="TODAY">Today's Registration</option>
+                </select>
               </div>
             </div>
 
@@ -450,32 +515,34 @@ export const CounselorDashboard: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-slate-800 text-slate-500 text-xs uppercase tracking-wider font-semibold">
-                    <th className="pb-3">Student Name</th>
-                    <th className="pb-3">Intended Course</th>
-                    <th className="pb-3 text-center">GPA</th>
-                    <th className="pb-3">Status</th>
+                  <tr className="border-b border-slate-800 text-slate-500 text-xs uppercase tracking-wider font-bold">
+                    <th className="pb-3 pr-2">Student Name</th>
+                    <th className="pb-3 pr-2">Intended Course</th>
+                    <th className="pb-3 pr-2 text-center">12th PCM %</th>
+                    <th className="pb-3 pr-2 text-center">JEE %tile</th>
+                    <th className="pb-3 pr-2">Recommended Course</th>
+                    <th className="pb-3 pr-2">Status</th>
                     <th className="pb-3 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
                   {isLoading ? (
                     <tr>
-                      <td colSpan={5} className="py-8 text-center text-slate-500">
+                      <td colSpan={7} className="py-12 text-center text-slate-500">
                         <span className="inline-block animate-spin rounded-full h-5 w-5 border-2 border-slate-700 border-t-indigo-500 mr-2 align-middle"></span>
                         Loading student records...
                       </td>
                     </tr>
                   ) : error ? (
                     <tr>
-                      <td colSpan={5} className="py-8 text-center text-red-400 font-medium">
+                      <td colSpan={7} className="py-12 text-center text-red-400 font-semibold">
                         {error}
                       </td>
                     </tr>
                   ) : filteredStudents.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="py-8 text-center text-slate-500">
-                        No registered students found.
+                      <td colSpan={7} className="py-12 text-center text-slate-500">
+                        No registered students found matching criteria.
                       </td>
                     </tr>
                   ) : (
@@ -484,44 +551,46 @@ export const CounselorDashboard: React.FC = () => {
                         key={student.id}
                         className="group hover:bg-slate-800/10 transition-colors"
                       >
-                        <td className="py-3.5 font-semibold text-white">{student.formattedName}</td>
-                        <td className="py-3.5 text-slate-300">
-                          {student.formattedCourse}
-                          <span className="block text-slate-500 text-xs">
-                            Destination: {student.formattedCountry}
+                        <td className="py-4 font-semibold text-white pr-2">
+                          <p className="truncate max-w-[120px]" title={student.formattedName}>{student.formattedName}</p>
+                          <span className="text-[10px] text-slate-500 block truncate max-w-[120px]">{student.email}</span>
+                        </td>
+                        <td className="py-4 text-slate-300 pr-2">
+                          <span className="truncate block max-w-[120px] font-medium" title={student.formattedCourse}>{student.formattedCourse}</span>
+                        </td>
+                        <td className="py-4 text-center text-slate-300 font-mono pr-2 font-semibold">
+                          {student.twelfthPCM ? `${student.twelfthPCM}%` : 'N/A'}
+                        </td>
+                        <td className="py-4 text-center text-slate-300 font-mono pr-2 font-semibold">
+                          {student.jee ? student.jee : 'N/A'}
+                        </td>
+                        <td className="py-4 text-slate-300 pr-2">
+                          <span className="text-xs font-bold text-indigo-400 block truncate max-w-[150px]" title={student.recommendedCourse}>
+                            {student.recommendedCourse}
                           </span>
                         </td>
-                        <td className="py-3.5 text-center text-slate-300 font-mono">
-                          {student.formattedGpa}
-                        </td>
-                        <td className="py-3.5">
+                        <td className="py-4 pr-2">
                           <span
-                            className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                              student.formattedStatus === 'Approved' ||
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                               student.formattedStatus === 'APPROVED'
                                 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                                : student.formattedStatus === 'Pending Review' ||
-                                    student.formattedStatus === 'UNDER_REVIEW' ||
-                                    student.formattedStatus === 'APPLIED'
+                                : ['PENDING', 'UNDER_REVIEW', 'APPLIED'].includes(student.formattedStatus)
                                   ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
-                                  : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                                  : student.formattedStatus === 'REJECTED'
+                                    ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                                    : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
                             }`}
                           >
-                            {student.formattedStatus}
+                            {student.formattedStatus.replace('_', ' ')}
                           </span>
                         </td>
-                        <td className="py-3.5 text-right">
-                          <div className="inline-flex gap-1.5">
-                            <button
-                              onClick={(e) => handleReviewStudent(e, student)}
-                              className="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition-all cursor-pointer z-10 relative"
-                            >
-                              Review
-                            </button>
-                            <button className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all cursor-pointer">
-                              <MessageSquare className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
+                        <td className="py-4 text-right">
+                          <button
+                            onClick={(e) => handleReviewStudent(e, student)}
+                            className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition-all cursor-pointer shadow-md hover:shadow-indigo-500/25"
+                          >
+                            Review
+                          </button>
                         </td>
                       </tr>
                     ))
@@ -529,56 +598,125 @@ export const CounselorDashboard: React.FC = () => {
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-4 border-t border-slate-800/80">
+                <button
+                  disabled={page === 1}
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:text-white text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
+                >
+                  Previous
+                </button>
+                <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">
+                  Page {page} of {totalPages}
+                </span>
+                <button
+                  disabled={page === totalPages}
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:text-white text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Appointments Calendar Column */}
-          <div className="bg-slate-900/45 border border-slate-800 rounded-2xl p-6 space-y-6">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-indigo-400" />
-              Today's Bookings
-            </h2>
+          {/* Right Panel: Bookings & PDF Upload */}
+          <div className="space-y-6">
+            {/* Upload Fee Brochures Card */}
+            <div className="bg-slate-900/45 border border-slate-800 rounded-2xl p-6 space-y-4">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <GraduationCap className="w-5 h-5 text-indigo-400" />
+                Upload Fee Brochures
+              </h2>
+              <p className="text-slate-400 text-xs leading-relaxed">
+                Add or overwrite institutional fee brochures for all students.
+              </p>
 
-            <div className="space-y-4">
-              {appointments.map((apt) => (
-                <div
-                  key={apt.id}
-                  className="p-4 bg-slate-950/60 border border-slate-800 rounded-xl space-y-3 group hover:border-indigo-500/20 transition-all"
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-bold text-white text-sm group-hover:text-indigo-400 transition-colors">
-                        {apt.student}
-                      </h4>
-                      <p className="text-xs text-slate-500">{apt.topic}</p>
-                    </div>
-                    <span className="text-xs font-semibold text-indigo-400 flex items-center gap-1 bg-indigo-500/5 px-2 py-0.5 rounded border border-indigo-500/10">
-                      <Clock className="w-3 h-3" />
-                      {apt.time}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center text-xs text-slate-400 pt-1 border-t border-slate-800/80">
-                    <span>Date: {apt.date}</span>
-                    <button className="text-indigo-400 hover:underline font-semibold cursor-pointer">
-                      Start Call
-                    </button>
-                  </div>
+              {brochureSuccess && (
+                <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
+                  {brochureSuccess}
                 </div>
-              ))}
+              )}
+              {brochureError && (
+                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold">
+                  {brochureError}
+                </div>
+              )}
+
+              <form onSubmit={handleBrochureUpload} className="space-y-4 pt-1">
+                <div className="space-y-1">
+                  <label className="text-slate-450 text-[10px] font-bold uppercase tracking-wider block">Brochure Type *</label>
+                  <select
+                    value={brochureName}
+                    onChange={(e) => setBrochureName(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none cursor-pointer"
+                  >
+                    <option value="academic_fee">Academic Fee Structure</option>
+                    <option value="hostel_fee">Hostel Fee Structure</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-slate-450 text-[10px] font-bold uppercase tracking-wider block">PDF Document *</label>
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files.length > 0) {
+                        setBrochureFile(e.target.files[0]);
+                      }
+                    }}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-350 focus:outline-none file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-indigo-600/10 file:text-indigo-400 file:hover:bg-indigo-600/20 file:cursor-pointer"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isUploadingBrochure}
+                  className="w-full py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-md transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  {isUploadingBrochure ? 'Uploading File...' : 'Upload Brochure'}
+                </button>
+              </form>
             </div>
 
-            {/* Availability Settings Quick-Link */}
-            <div className="p-5 rounded-xl bg-slate-950/40 border border-slate-800 space-y-2">
-              <div className="flex items-center gap-2 text-indigo-400 text-sm font-semibold">
-                <UserCheck className="w-4 h-4" />
-                <span>Duty Calendar</span>
+            {/* Appointments Calendar Column */}
+            <div className="bg-slate-900/45 border border-slate-800 rounded-2xl p-6 space-y-6">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-indigo-400" />
+                Today's Bookings
+              </h2>
+
+              <div className="space-y-4">
+                {appointments.map((apt) => (
+                  <div
+                    key={apt.id}
+                    className="p-4 bg-slate-950/60 border border-slate-800 rounded-xl space-y-3 group hover:border-indigo-500/20 transition-all"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-bold text-white text-sm group-hover:text-indigo-400 transition-colors">
+                          {apt.student}
+                        </h4>
+                        <p className="text-xs text-slate-500">{apt.topic}</p>
+                      </div>
+                      <span className="text-xs font-semibold text-indigo-400 flex items-center gap-1 bg-indigo-500/5 px-2 py-0.5 rounded border border-indigo-500/10">
+                        <Clock className="w-3 h-3" />
+                        {apt.time}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs text-slate-400 pt-1 border-t border-slate-800/80">
+                      <span>Date: {apt.date}</span>
+                      <button className="text-indigo-400 hover:underline font-semibold cursor-pointer">
+                        Start Call
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Update your active counseling timings and sync with appointments scheduling
-                platform.
-              </p>
-              <button className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold cursor-pointer">
-                Manage Availability &rarr;
-              </button>
             </div>
           </div>
         </div>

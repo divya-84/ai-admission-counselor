@@ -37,11 +37,39 @@ export class AuthService {
     phone?: string;
     nationality?: string;
     role?: Role;
+    fatherName?: string;
+    motherName?: string;
+    location?: string;
+    tenthPercentage?: number;
+    twelfthPercentage?: number;
+    twelfthPCMPercentage?: number;
+    jeePercentile?: number;
   }) {
     const normalizedEmail = data.email.toLowerCase().trim();
     logger.info(
       `Processing registration request for email: [${data.email}] -> normalized: [${normalizedEmail}] as role: ${data.role || Role.STUDENT}`,
     );
+
+    const selectedRole =
+      data.role && Object.values(Role).includes(data.role) ? data.role : Role.STUDENT;
+
+    // Enforce role access control (only STUDENT and COUNSELOR can register/login)
+    if (selectedRole !== Role.STUDENT && selectedRole !== Role.COUNSELOR) {
+      throw new Error('Access Denied: Invalid role selection.');
+    }
+
+    const prisma = (await import('../config/database.js')).default;
+
+    // Verify counselor email authorization
+    if (selectedRole === Role.COUNSELOR) {
+      const authorized = await prisma.authorizedCounselor.findUnique({
+        where: { email: normalizedEmail },
+      });
+      if (!authorized) {
+        logger.warn(`Registration block: Counselor email not authorized: ${normalizedEmail}`);
+        throw new Error('Access Denied: Email is not authorized to register as a counselor.');
+      }
+    }
 
     // Validate duplicate email
     const existingUser = await usersRepository.findByEmail(normalizedEmail);
@@ -52,7 +80,6 @@ export class AuthService {
 
     // Validate duplicate phone if provided
     if (data.phone) {
-      const prisma = (await import('../config/database.js')).default;
       const studentPhone = await prisma.student.findFirst({ where: { phone: data.phone } });
       const counselorPhone = await prisma.counselor.findFirst({ where: { phone: data.phone } });
       if (studentPhone || counselorPhone) {
@@ -65,9 +92,6 @@ export class AuthService {
     const rawVerificationToken = crypto.randomBytes(32).toString('hex');
     const hashedVerificationToken = this.hashSha256(rawVerificationToken);
     const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-    const selectedRole =
-      data.role && Object.values(Role).includes(data.role) ? data.role : Role.STUDENT;
 
     // Create user and profile in a single repository transaction context
     const newUser = await usersRepository.create({
@@ -83,7 +107,15 @@ export class AuthService {
             student: {
               create: {
                 phone: data.phone,
-                nationality: data.nationality,
+                nationality: data.nationality || 'Indian',
+                fatherName: data.fatherName,
+                motherName: data.motherName,
+                location: data.location,
+                tenthPercentage: data.tenthPercentage,
+                twelfthPercentage: data.twelfthPercentage,
+                twelfthPCMPercentage: data.twelfthPCMPercentage,
+                jeePercentile: data.jeePercentile,
+                percentage: data.twelfthPercentage,
               },
             },
           }
@@ -92,6 +124,8 @@ export class AuthService {
               counselor: {
                 create: {
                   phone: data.phone,
+                  specialization: 'General Admissions',
+                  bio: 'Academic Counselor',
                 },
               },
             }
@@ -208,6 +242,23 @@ export class AuthService {
     if (!user) {
       logger.warn(`Login failed: No user found with normalized email: ${normalizedEmail}`);
       throw new Error('Invalid email or password');
+    }
+
+    // Role-based Access Control checks (only Student and Counselor can access the system)
+    if (user.role !== Role.STUDENT && user.role !== Role.COUNSELOR) {
+      logger.warn(`Login block: Role ${user.role} is not authorized to access the system: ${normalizedEmail}`);
+      throw new Error('Access Denied: Unauthorized role.');
+    }
+
+    if (user.role === Role.COUNSELOR) {
+      const prisma = (await import('../config/database.js')).default;
+      const authorized = await prisma.authorizedCounselor.findUnique({
+        where: { email: normalizedEmail },
+      });
+      if (!authorized) {
+        logger.warn(`Login block: Counselor email is not authorized: ${normalizedEmail}`);
+        throw new Error('Access Denied: Unauthorized counselor email.');
+      }
     }
 
     // Check account lockout

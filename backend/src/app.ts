@@ -5,6 +5,8 @@ import { ZodError } from 'zod';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import logger from './config/logger.js';
 import authRoutes from './routes/auth.routes.js';
 import chatRoutes from './routes/chat.routes.js';
@@ -49,6 +51,10 @@ app.use(
 
 app.use(cookieParser());
 app.use(express.json());
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use('/uploads', express.static(path.join(__dirname, '../storage/uploads')));
 
 // Rate limiting
 const limiter = rateLimit({

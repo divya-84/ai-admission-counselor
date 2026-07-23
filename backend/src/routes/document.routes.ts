@@ -36,4 +36,19 @@ router.post(
   documentController.verifyDocument as RequestHandler,
 );
 
+// Global Institutional PDF Upload/List
+router.post(
+  '/global-upload',
+  authenticateJWT as RequestHandler,
+  requireRoles('COUNSELOR', 'ADMIN') as RequestHandler,
+  upload.single('file') as RequestHandler,
+  documentController.uploadGlobalDocument as RequestHandler,
+);
+
+router.get(
+  '/global-list',
+  authenticateJWT as RequestHandler,
+  documentController.listGlobalDocuments as RequestHandler,
+);
+
 export default router;

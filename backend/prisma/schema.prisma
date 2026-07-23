@@ -27,6 +27,8 @@ enum AdmissionStatus {
   APPROVED
   REJECTED
   WITHDRAWN
+  HOLD
+  REQUEST_CHANGES
 }
 
 enum VerificationStatus {
@@ -125,6 +127,11 @@ model Student {
   fatherName       String?              @map("father_name")
   motherName       String?              @map("mother_name")
   guardianContact  String?              @map("guardian_contact")
+  tenthPercentage  Decimal?             @db.Decimal(5, 2) @map("tenth_percentage")
+  twelfthPercentage Decimal?            @db.Decimal(5, 2) @map("twelfth_percentage")
+  twelfthPCMPercentage Decimal?          @db.Decimal(5, 2) @map("twelfth_pcm_percentage")
+  jeePercentile    Decimal?             @db.Decimal(5, 2) @map("jee_percentile")
+  location         String?
   
   createdAt        DateTime             @default(now()) @map("created_at")
   updatedAt        DateTime             @updatedAt @map("updated_at")
@@ -304,4 +311,23 @@ model Appointment {
   counselor       Counselor         @relation(fields: [counselorId], references: [id], onDelete: Cascade)
 
   @@map("appointments")
+}
+
+model AuthorizedCounselor {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("authorized_counselors")
+}
+
+model InstitutionDocument {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  fileName  String   @map("file_name")
+  url       String
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("institution_documents")
 }

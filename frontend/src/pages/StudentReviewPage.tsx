@@ -64,9 +64,9 @@ export const StudentReviewPage: React.FC = () => {
     enabled: !!studentId,
   });
 
-  // Handle Counselor actions (Approve, Reject, Request Info, Save Remarks)
+  // Handle Counselor actions (Approve, Reject, Hold, Request Changes, Save Remarks)
   const handleAction = async (
-    status: 'APPROVED' | 'REJECTED' | 'UNDER_REVIEW',
+    status: 'APPROVED' | 'REJECTED' | 'UNDER_REVIEW' | 'HOLD' | 'REQUEST_CHANGES',
     customNotes?: string,
   ) => {
     if (!studentId) return;
@@ -121,7 +121,7 @@ export const StudentReviewPage: React.FC = () => {
     e.preventDefault();
     const activeAdmission = data?.admissions?.[0];
     const currentStatus = activeAdmission?.status || 'UNDER_REVIEW';
-    await handleAction(currentStatus, counselorNotes);
+    await handleAction(currentStatus as any, counselorNotes);
   };
 
   // Helper to format test scores or extra JSON
@@ -429,22 +429,38 @@ export const StudentReviewPage: React.FC = () => {
               <span className="text-slate-200">{student.highSchoolName || 'N/A'}</span>
             </div>
             <div className="flex justify-between border-b border-slate-800/40 pb-1.5">
-              <span className="text-slate-500">Qualification Degree:</span>
-              <span className="text-slate-200">{student.qualification || 'N/A'}</span>
+              <span className="text-slate-500">10th Overall Percentage:</span>
+              <span className="text-slate-200 font-mono font-semibold">
+                {student.tenthPercentage ? `${student.tenthPercentage}%` : 'N/A'}
+              </span>
             </div>
             <div className="flex justify-between border-b border-slate-800/40 pb-1.5">
-              <span className="text-slate-500">Board / University:</span>
-              <span className="text-slate-200">{student.boardUniversity || 'N/A'}</span>
+              <span className="text-slate-500">12th Overall Percentage:</span>
+              <span className="text-slate-200 font-mono font-semibold">
+                {student.twelfthPercentage ? `${student.twelfthPercentage}%` : 'N/A'}
+              </span>
+            </div>
+            <div className="flex justify-between border-b border-slate-800/40 pb-1.5">
+              <span className="text-slate-500">12th PCM Percentage:</span>
+              <span className="text-indigo-400 font-mono font-bold">
+                {student.twelfthPCMPercentage ? `${student.twelfthPCMPercentage}%` : 'N/A'}
+              </span>
+            </div>
+            <div className="flex justify-between border-b border-slate-800/40 pb-1.5">
+              <span className="text-slate-500">JEE Percentile:</span>
+              <span className="text-indigo-400 font-mono font-bold">
+                {student.jeePercentile ? student.jeePercentile : 'N/A'}
+              </span>
+            </div>
+            <div className="flex justify-between border-b border-slate-800/40 pb-1.5">
+              <span className="text-slate-500">Recommended Course:</span>
+              <span className="text-indigo-400 font-bold uppercase tracking-wide">
+                {student.recommendedCourse || 'Currently Not Eligible'}
+              </span>
             </div>
             <div className="flex justify-between border-b border-slate-800/40 pb-1.5">
               <span className="text-slate-500">Passing Year:</span>
               <span className="text-slate-200 font-mono">{student.passingYear || 'N/A'}</span>
-            </div>
-            <div className="flex justify-between border-b border-slate-800/40 pb-1.5">
-              <span className="text-slate-500">Aggregate Percentage Score:</span>
-              <span className="text-slate-200 font-mono">
-                {student.percentage ? `${student.percentage}%` : 'N/A'}
-              </span>
             </div>
             <div className="flex justify-between border-b border-slate-800/40 pb-1.5">
               <span className="text-slate-500">GPA Score (Standardized):</span>
@@ -624,11 +640,19 @@ export const StudentReviewPage: React.FC = () => {
               <div className="inline-flex gap-3">
                 <button
                   type="button"
-                  onClick={() => handleAction('UNDER_REVIEW')}
+                  onClick={() => handleAction('REQUEST_CHANGES')}
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 rounded-xl text-xs font-semibold cursor-pointer disabled:cursor-not-allowed transition-all"
+                  className="px-4 py-2 bg-indigo-550/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 rounded-xl text-xs font-semibold cursor-pointer disabled:cursor-not-allowed transition-all"
                 >
-                  Request Info
+                  Request Changes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAction('HOLD')}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 bg-amber-500/10 text-amber-450 border border-amber-500/20 hover:bg-amber-500/20 rounded-xl text-xs font-semibold cursor-pointer disabled:cursor-not-allowed transition-all"
+                >
+                  Hold
                 </button>
                 <button
                   type="button"
@@ -636,7 +660,7 @@ export const StudentReviewPage: React.FC = () => {
                   disabled={isSubmitting}
                   className="px-5 py-2 bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 rounded-xl text-xs font-semibold cursor-pointer disabled:cursor-not-allowed transition-all"
                 >
-                  Reject Application
+                  Reject
                 </button>
                 <button
                   type="button"
@@ -644,7 +668,7 @@ export const StudentReviewPage: React.FC = () => {
                   disabled={isSubmitting}
                   className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold cursor-pointer disabled:cursor-not-allowed transition-all shadow-lg shadow-emerald-500/10"
                 >
-                  Approve Application
+                  Approve
                 </button>
               </div>
             </div>

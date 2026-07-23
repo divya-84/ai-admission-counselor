@@ -15,15 +15,95 @@ export const registerSchema = z
       .min(8, 'Password must be at least 8 characters long')
       .regex(/[a-zA-Z]/, 'Password must contain at least one letter')
       .regex(/[0-9]/, 'Password must contain at least one number'),
-    name: z.string().min(2, 'Name must be at least 2 characters long').optional(),
-    fullname: z.string().min(2, 'Full Name must be at least 2 characters long').optional(),
+    confirmPassword: z.string().min(1, 'Confirm Password is required'),
+    name: z.string().optional(),
+    fullname: z.string().optional(),
+    fatherName: z.string().optional(),
+    motherName: z.string().optional(),
     phone: z.string().optional(),
+    location: z.string().optional(),
     nationality: z.string().optional(),
-    role: z.enum(['STUDENT', 'FACULTY', 'COUNSELOR', 'ADMIN', 'SUPER_ADMIN']).default('STUDENT'),
+    tenthPercentage: z.number().min(0, 'Percentage must be positive').max(100, 'Percentage cannot exceed 100').optional(),
+    twelfthPercentage: z.number().min(0, 'Percentage must be positive').max(100, 'Percentage cannot exceed 100').optional(),
+    twelfthPCMPercentage: z.number().min(0, 'Percentage must be positive').max(100, 'Percentage cannot exceed 100').optional(),
+    jeePercentile: z.number().min(0, 'Percentile must be positive').max(100, 'Percentile cannot exceed 100').optional(),
+    role: z.enum(['STUDENT', 'COUNSELOR']).default('STUDENT'),
   })
-  .refine((data) => !!(data.name || data.fullname), {
-    message: 'Either name or fullname is required',
-    path: ['name'],
+  .superRefine((data, ctx) => {
+    if (data.password !== data.confirmPassword) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Passwords do not match',
+        path: ['confirmPassword'],
+      });
+    }
+
+    if (data.role === 'STUDENT') {
+      const actualName = data.name || data.fullname;
+      if (!actualName || actualName.trim().length < 2) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Full Name must be at least 2 characters long',
+          path: ['fullname'],
+        });
+      }
+      if (!data.fatherName || data.fatherName.trim().length < 2) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Father's Name must be at least 2 characters long",
+          path: ['fatherName'],
+        });
+      }
+      if (!data.motherName || data.motherName.trim().length < 2) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Mother's Name must be at least 2 characters long",
+          path: ['motherName'],
+        });
+      }
+      if (!data.phone || data.phone.trim().length < 10) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Valid phone number is required (min 10 digits)',
+          path: ['phone'],
+        });
+      }
+      if (!data.location || data.location.trim().length < 2) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Location is required',
+          path: ['location'],
+        });
+      }
+      if (data.tenthPercentage === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: '10th Percentage is required',
+          path: ['tenthPercentage'],
+        });
+      }
+      if (data.twelfthPercentage === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: '12th Percentage is required',
+          path: ['twelfthPercentage'],
+        });
+      }
+      if (data.twelfthPCMPercentage === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: '12th PCM Percentage is required',
+          path: ['twelfthPCMPercentage'],
+        });
+      }
+      if (data.jeePercentile === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'JEE Percentile is required',
+          path: ['jeePercentile'],
+        });
+      }
+    }
   });
 
 export const forgotPasswordSchema = z.object({
