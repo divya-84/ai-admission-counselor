@@ -7,6 +7,7 @@ async function seed() {
     'counselor@aktu.edu',
     'counselor@test.com',
     'admin@aktu.edu',
+    'maheshwari.divya84@gmail.com',
   ];
 
   for (const email of authorizedEmails) {
