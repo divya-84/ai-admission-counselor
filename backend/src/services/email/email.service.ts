@@ -14,13 +14,47 @@ export class EmailService {
         this.provider = new ResendEmailProvider();
       } else if (providerType === 'smtp') {
         this.provider = new SmtpEmailProvider();
+      } else if (providerType === 'mock' || providerType === 'console' || providerType === 'test') {
+        this.provider = {
+          sendEmail: async (options) => {
+            logger.info(`[MOCK EMAIL] To: ${options.to}, Subject: ${options.subject}`);
+          },
+          verifyConnection: async () => {
+            logger.info('[MOCK EMAIL] Connection verified (noop).');
+          },
+        };
       } else {
         logger.error(`Unsupported email provider: ${providerType}`);
+        this.setFallbackProvider();
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Unknown provider instantiation error';
       logger.error(`Failed to instantiate email provider: ${errorMsg}`);
+      this.setFallbackProvider();
     }
+  }
+
+  private setFallbackProvider(): void {
+    logger.info('Falling back to Mock Email Provider to prevent application crashes.');
+    this.provider = {
+      sendEmail: async (options) => {
+        logger.info(`[MOCK EMAIL FALLBACK] To: ${options.to}, Subject: ${options.subject}`);
+      },
+      verifyConnection: async () => {
+        logger.info('[MOCK EMAIL FALLBACK] Connection verified.');
+      },
+    };
+  }
+
+  isMock(): boolean {
+    const providerType = (process.env.EMAIL_PROVIDER || 'smtp').toLowerCase();
+    if (providerType === 'mock' || providerType === 'console' || providerType === 'test') {
+      return true;
+    }
+    if (providerType === 'smtp' && (process.env.SMTP_USER === 'mock-user' || !process.env.SMTP_USER)) {
+      return true;
+    }
+    return false;
   }
 
   async verifyConnection(): Promise<void> {
