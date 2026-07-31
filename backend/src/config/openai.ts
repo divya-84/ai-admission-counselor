@@ -28,7 +28,7 @@ const streamMockResponse = async (
     `Thank you for your interest! The admission requirements for the **M.S. in Computer Science** program include:\n\n1. A bachelor's degree in CS or related field.\n2. A minimum undergraduate GPA of **3.0** (on a 4.0 scale).\n3. English proficiency scores (e.g., IELTS **6.5** or TOEFL **90**).\n4. A Statement of Purpose (SOP) and 2 Letters of Recommendation.\n\nLet me know if you would like to review the specific tuition fees or application deadlines!`,
     `Sure! The annual tuition fee for the **M.S. in Computer Science** is **$22,000**. The university also offers several merit-based aid opportunities, such as the *Global Tech Excellence Scholarship*, which awards up to **$15,000** for qualified applicants.\n\nWould you like me to book a session with an advisor to discuss application steps?`,
     `We have four core departments offering graduate and undergraduate programs:\n\n- **Computer Science & AI**: M.S. in CS, Ph.D. in AI\n- **Mechanical Engineering**: B.S. in Robotics Engineering\n- **Administration & Commerce**: B.B.A. in Marketing\n\nWhich program matches your academic level?`,
-    `Hello! I am your AI Admission Counselor. I can assist you with:\n\n- Answering course eligibility queries.\n- Guiding you through document requirements.\n- Tracking your active application status.\n- Reviewing scholarship matching.\n\nHow can I help you today?`,
+    `Hello! I am your ABES Admission Counsellor. I can assist you with:\n\n- Answering course eligibility queries.\n- Guiding you through document requirements.\n- Tracking your active application status.\n- Reviewing scholarship matching.\n\nHow can I help you today?`,
   ];
 
   // Select a response based on keywords or select the last one as default

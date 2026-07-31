@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import abesLogo from '../../assets/images/abes-logo.png';
 import {
   Users,
   BookOpen,
@@ -392,9 +393,13 @@ export const AdminDashboard: React.FC = () => {
         {/* Title Banner */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-900/50 border border-slate-800 p-6 rounded-2xl backdrop-blur-md gap-4">
           <div className="space-y-1">
-            <h1 className="text-3xl font-extrabold text-white flex items-center gap-2">
-              <ShieldAlert className="w-8 h-8 text-indigo-500" />
-              Administrative Control Console
+            <h1 className="text-3xl font-extrabold text-white flex items-center gap-2.5">
+              <img
+                src={abesLogo}
+                alt="ABES Logo"
+                className="h-[30px] sm:h-[38px] md:h-[45px] w-auto object-contain"
+              />
+              ABES Admission Counsellor
             </h1>
             <p className="text-slate-400 text-sm">
               Manage system permissions, register academic courses, configure entrance limits,
@@ -872,7 +877,7 @@ export const AdminDashboard: React.FC = () => {
                 {activeTab === 'ai' && (
                   <div className="space-y-6">
                     <h3 className="text-base font-bold text-white uppercase tracking-wide">
-                      OpenAI Counselor Settings
+                      OpenAI ABES Counsellor Settings
                     </h3>
 
                     <form onSubmit={handleUpdateAISettings} className="space-y-4">

@@ -79,7 +79,7 @@ async function seedStudents() {
           skills: {
             programmingLanguages: ['Python', 'TypeScript', 'Java', 'C++'],
             frameworks: ['React', 'Node.js', 'Express', 'TailwindCSS'],
-            projects: ['AI Admission Counselor', 'Smart Health Monitor'],
+            projects: ['ABES Admission Counsellor', 'Smart Health Monitor'],
             certifications: ['AWS Certified Cloud Practitioner', 'Google Data Analytics'],
           },
         },

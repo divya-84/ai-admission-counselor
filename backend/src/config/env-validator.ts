@@ -21,7 +21,9 @@ export function validateEnv(): void {
   } else {
     // Shared email from address check
     if (!process.env.EMAIL_FROM) {
-      errors.push('EMAIL_FROM is missing. E.g. "AI Admission Counselor <onboarding@resend.dev>".');
+      errors.push(
+        'EMAIL_FROM is missing. E.g. "ABES Admission Counsellor <onboarding@resend.dev>".',
+      );
     }
 
     if (emailProvider === 'resend') {

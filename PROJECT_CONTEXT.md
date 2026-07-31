@@ -1,8 +1,8 @@
-# Project Context: AI Admission Counselor
+# Project Context: ABES Admission Counsellor
 
 ## Overview
 
-AI Admission Counselor is an enterprise-grade, AI-driven advising application designed to guide students through the university admission process. It leverages a modern frontend (React 19 + Vite), a secure Node/Express backend, and a RAG (Retrieval-Augmented Generation) pipeline using OpenAI, LangChain, and vector embeddings (FAISS) to query academic resources.
+ABES Admission Counsellor is an enterprise-grade, AI-driven advising application designed to guide students through the university admission process. It leverages a modern frontend (React 19 + Vite), a secure Node/Express backend, and a RAG (Retrieval-Augmented Generation) pipeline using OpenAI, LangChain, and vector embeddings (FAISS) to query academic resources.
 
 ## Architecture
 

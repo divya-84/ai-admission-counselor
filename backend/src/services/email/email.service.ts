@@ -51,7 +51,10 @@ export class EmailService {
     if (providerType === 'mock' || providerType === 'console' || providerType === 'test') {
       return true;
     }
-    if (providerType === 'smtp' && (process.env.SMTP_USER === 'mock-user' || !process.env.SMTP_USER)) {
+    if (
+      providerType === 'smtp' &&
+      (process.env.SMTP_USER === 'mock-user' || !process.env.SMTP_USER)
+    ) {
       return true;
     }
     return false;
@@ -77,6 +80,7 @@ export class EmailService {
   ): string {
     const supportEmail =
       process.env.SUPPORT_EMAIL || process.env.EMAIL_FROM || 'support@university.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 
     const buttonHtml = actionButton
       ? `
@@ -131,7 +135,7 @@ export class EmailService {
       overflow: hidden;
     }
     .header {
-      background: linear-gradient(135deg, #4f46e5 0%, #312e81 100%);
+      background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
       padding: 32px;
       text-align: center;
     }
@@ -164,7 +168,7 @@ export class EmailService {
     }
     .btn {
       display: inline-block;
-      background-color: #4f46e5;
+      background-color: #28a745;
       color: #ffffff !important;
       font-weight: 600;
       font-size: 15px;
@@ -191,7 +195,7 @@ export class EmailService {
       border-top: 1px solid #1e293b;
     }
     .fallback a {
-      color: #6366f1;
+      color: #28a745;
       text-decoration: underline;
     }
     .footer {
@@ -212,7 +216,8 @@ export class EmailService {
   <div class="wrapper">
     <div class="container">
       <div class="header">
-        <h1>AI Powered Admission Counselor</h1>
+        <img src="${frontendUrl}/favicon.png" alt="ABES Logo" style="height: 48px; width: auto; margin-bottom: 12px; display: inline-block; vertical-align: middle;" />
+        <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 800; letter-spacing: -0.025em; display: inline-block; vertical-align: middle; margin-left: 10px;">ABES Admission Counsellor</h1>
       </div>
       
       <div class="content">
@@ -223,7 +228,7 @@ export class EmailService {
       </div>
       
       <div class="footer">
-        © ${new Date().getFullYear()} AI Powered Admission Counselor. All rights reserved.
+        © ${new Date().getFullYear()} ABES Admission Counsellor. All rights reserved.
         <br>
         If you need assistance, please contact us at <a href="mailto:${supportEmail}">${supportEmail}</a>
       </div>
@@ -245,7 +250,7 @@ export class EmailService {
 
     const contentHtml = `
       <p class="text">
-        Thank you for registering with the AI Powered Admission Counselor platform!
+        Thank you for registering with the ABES Admission Counsellor platform!
         To complete your registration and activate your account, please verify your email address by clicking the button below.
       </p>
     `;
@@ -262,7 +267,7 @@ export class EmailService {
 
     await this.provider.sendEmail({
       to,
-      subject: 'Verify Your Email - AI Powered Admission Counselor',
+      subject: 'Verify Your Email - ABES Admission Counsellor',
       html,
     });
   }
@@ -275,7 +280,7 @@ export class EmailService {
     const contentHtml = `
       <p class="text">
         Your email address has been successfully verified. Welcome to our advisor community!
-        Our AI Admission Counselor is ready to help you navigate course selection, eligibility checking, scholarships, and documents vault.
+        Our ABES Admission Counsellor is ready to help you navigate course selection, eligibility checking, scholarships, and documents vault.
       </p>
       <p class="text">
         You can now log in to your dashboard to complete your admission profile or schedule counseling sessions.
@@ -286,7 +291,7 @@ export class EmailService {
 
     await this.provider.sendEmail({
       to,
-      subject: 'Welcome to AI Powered Admission Counselor!',
+      subject: 'Welcome to ABES Admission Counsellor!',
       html,
     });
   }
@@ -302,7 +307,7 @@ export class EmailService {
 
     const contentHtml = `
       <p class="text">
-        We received a request to reset the password for your AI Powered Admission Counselor account.
+        We received a request to reset the password for your ABES Admission Counsellor account.
         If you made this request, please click the button below to set a new password.
       </p>
     `;
@@ -320,7 +325,7 @@ export class EmailService {
 
     await this.provider.sendEmail({
       to,
-      subject: 'Reset Your Password - AI Powered Admission Counselor',
+      subject: 'Reset Your Password - ABES Admission Counsellor',
       html,
     });
   }
@@ -332,7 +337,7 @@ export class EmailService {
 
     const contentHtml = `
       <p class="text">
-        This is a confirmation that the password for your AI Powered Admission Counselor account was recently updated.
+        This is a confirmation that the password for your ABES Admission Counsellor account was recently updated.
         If you performed this change, no further action is required.
       </p>
       <p class="text" style="color: #ef4444; font-weight: bold;">
@@ -391,7 +396,7 @@ export class EmailService {
 
     const contentHtml = `
       <p class="text">
-        Your AI Powered Admission Counselor account is now active and ready for use.
+        Your ABES Admission Counsellor account is now active and ready for use.
         If it was previously locked or pending email verification, these checks have been successfully cleared.
       </p>
     `;

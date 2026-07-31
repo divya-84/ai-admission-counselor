@@ -1,4 +1,5 @@
 import { Routes, Route, useNavigate, Outlet } from 'react-router';
+import abesLogo from './assets/images/abes-logo.png';
 import { useSelector, useDispatch } from 'react-redux';
 import { clearCredentials, setError, setLoading } from './store/authSlice';
 import type { RootState } from './store';
@@ -53,11 +54,13 @@ function DashboardLayout() {
       <header className="bg-slate-900/80 border-b border-slate-800 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20">
-              AC
-            </div>
+            <img
+              src={abesLogo}
+              alt="ABES Logo"
+              className="h-[30px] sm:h-[38px] md:h-[45px] w-auto object-contain"
+            />
             <span className="font-extrabold text-white tracking-tight hidden sm:inline-block">
-              AI Admission Counselor
+              ABES Admission Counsellor
             </span>
           </div>
           <div className="flex items-center gap-4">

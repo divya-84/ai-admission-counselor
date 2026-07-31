@@ -492,13 +492,19 @@ export const CounselorDashboard: React.FC = () => {
                     type="text"
                     placeholder="Search name, email, phone..."
                     value={searchTerm}
-                    onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setPage(1);
+                    }}
                     className="w-full sm:w-48 bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-350 placeholder-slate-650 focus:outline-none focus:border-indigo-500"
                   />
                 </div>
                 <select
                   value={filter}
-                  onChange={(e) => { setFilter(e.target.value); setPage(1); }}
+                  onChange={(e) => {
+                    setFilter(e.target.value);
+                    setPage(1);
+                  }}
                   className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-350 focus:outline-none focus:border-indigo-500 cursor-pointer"
                 >
                   <option value="">All Applications</option>
@@ -552,11 +558,20 @@ export const CounselorDashboard: React.FC = () => {
                         className="group hover:bg-slate-800/10 transition-colors"
                       >
                         <td className="py-4 font-semibold text-white pr-2">
-                          <p className="truncate max-w-[120px]" title={student.formattedName}>{student.formattedName}</p>
-                          <span className="text-[10px] text-slate-500 block truncate max-w-[120px]">{student.email}</span>
+                          <p className="truncate max-w-[120px]" title={student.formattedName}>
+                            {student.formattedName}
+                          </p>
+                          <span className="text-[10px] text-slate-500 block truncate max-w-[120px]">
+                            {student.email}
+                          </span>
                         </td>
                         <td className="py-4 text-slate-300 pr-2">
-                          <span className="truncate block max-w-[120px] font-medium" title={student.formattedCourse}>{student.formattedCourse}</span>
+                          <span
+                            className="truncate block max-w-[120px] font-medium"
+                            title={student.formattedCourse}
+                          >
+                            {student.formattedCourse}
+                          </span>
                         </td>
                         <td className="py-4 text-center text-slate-300 font-mono pr-2 font-semibold">
                           {student.twelfthPCM ? `${student.twelfthPCM}%` : 'N/A'}
@@ -565,7 +580,10 @@ export const CounselorDashboard: React.FC = () => {
                           {student.jee ? student.jee : 'N/A'}
                         </td>
                         <td className="py-4 text-slate-300 pr-2">
-                          <span className="text-xs font-bold text-indigo-400 block truncate max-w-[150px]" title={student.recommendedCourse}>
+                          <span
+                            className="text-xs font-bold text-indigo-400 block truncate max-w-[150px]"
+                            title={student.recommendedCourse}
+                          >
                             {student.recommendedCourse}
                           </span>
                         </td>
@@ -574,7 +592,9 @@ export const CounselorDashboard: React.FC = () => {
                             className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                               student.formattedStatus === 'APPROVED'
                                 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                                : ['PENDING', 'UNDER_REVIEW', 'APPLIED'].includes(student.formattedStatus)
+                                : ['PENDING', 'UNDER_REVIEW', 'APPLIED'].includes(
+                                      student.formattedStatus,
+                                    )
                                   ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
                                   : student.formattedStatus === 'REJECTED'
                                     ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
@@ -604,7 +624,7 @@ export const CounselorDashboard: React.FC = () => {
               <div className="flex items-center justify-between pt-4 border-t border-slate-800/80">
                 <button
                   disabled={page === 1}
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
                   className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:text-white text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
                 >
                   Previous
@@ -614,7 +634,7 @@ export const CounselorDashboard: React.FC = () => {
                 </span>
                 <button
                   disabled={page === totalPages}
-                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-400 hover:text-white text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
                 >
                   Next
@@ -648,7 +668,9 @@ export const CounselorDashboard: React.FC = () => {
 
               <form onSubmit={handleBrochureUpload} className="space-y-4 pt-1">
                 <div className="space-y-1">
-                  <label className="text-slate-450 text-[10px] font-bold uppercase tracking-wider block">Brochure Type *</label>
+                  <label className="text-slate-450 text-[10px] font-bold uppercase tracking-wider block">
+                    Brochure Type *
+                  </label>
                   <select
                     value={brochureName}
                     onChange={(e) => setBrochureName(e.target.value)}
@@ -660,7 +682,9 @@ export const CounselorDashboard: React.FC = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-slate-450 text-[10px] font-bold uppercase tracking-wider block">PDF Document *</label>
+                  <label className="text-slate-450 text-[10px] font-bold uppercase tracking-wider block">
+                    PDF Document *
+                  </label>
                   <input
                     type="file"
                     accept=".pdf"

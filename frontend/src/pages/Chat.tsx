@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
+import abesLogo from '../assets/images/abes-logo.png';
 import ReactMarkdown from 'react-markdown';
 import {
   Send,
-  Sparkles,
   ArrowLeft,
   MessageSquare,
   AlertCircle,
@@ -275,8 +275,8 @@ export const Chat: React.FC = () => {
             </button>
             <div>
               <h2 className="text-base font-bold text-white flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-indigo-400" />
-                Admission AI Advisor
+                <img src={abesLogo} alt="ABES Logo" className="h-[24px] w-auto object-contain" />
+                ABES Admission Counsellor
               </h2>
               <span className="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -349,8 +349,8 @@ export const Chat: React.FC = () => {
               <div className="space-y-2">
                 <h3 className="text-lg font-bold text-white">Ask your first question</h3>
                 <p className="text-slate-400 text-sm leading-relaxed">
-                  Start an academic conversation with our AI Admission Counselor. Click one of the
-                  suggested prompts below or enter your own query.
+                  Start an academic conversation with our ABES Admission Counsellor. Click one of
+                  the suggested prompts below or enter your own query.
                 </p>
               </div>
 
@@ -377,8 +377,8 @@ export const Chat: React.FC = () => {
                 >
                   {/* Bot Avatar Icon */}
                   {msg.isBot && (
-                    <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-white shrink-0 shadow-md">
-                      AI
+                    <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shrink-0 overflow-hidden shadow-md">
+                      <img src={abesLogo} alt="ABES Logo" className="w-full h-full object-cover" />
                     </div>
                   )}
 

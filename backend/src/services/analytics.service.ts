@@ -99,7 +99,7 @@ export class AnalyticsService {
         const d = new Date();
         d.setDate(d.getDate() - i);
         const dayLabel = days[d.getDay()];
-        
+
         const start = new Date(d);
         start.setHours(0, 0, 0, 0);
         const end = new Date(d);

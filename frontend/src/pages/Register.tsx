@@ -1,6 +1,17 @@
 import React, { useState } from 'react';
+import abesLogo from '../assets/images/abes-logo.png';
 import { useNavigate, Link } from 'react-router';
-import { UserPlus, Mail, Lock, User, Phone, MapPin, AlertCircle, CheckCircle, GraduationCap } from 'lucide-react';
+import {
+  UserPlus,
+  Mail,
+  Lock,
+  User,
+  Phone,
+  MapPin,
+  AlertCircle,
+  CheckCircle,
+  GraduationCap,
+} from 'lucide-react';
 
 export const Register: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -39,8 +50,19 @@ export const Register: React.FC = () => {
     }
 
     if (role === 'STUDENT') {
-      if (!fatherName || !motherName || !phone || !location || !tenthPercentage || !twelfthPercentage || !twelfthPCMPercentage || !jeePercentile) {
-        setError('All fields (Father\'s Name, Mother\'s Name, Mobile, Location, 10th %, 12th %, 12th PCM %, JEE Percentile) are required for Students.');
+      if (
+        !fatherName ||
+        !motherName ||
+        !phone ||
+        !location ||
+        !tenthPercentage ||
+        !twelfthPercentage ||
+        !twelfthPCMPercentage ||
+        !jeePercentile
+      ) {
+        setError(
+          "All fields (Father's Name, Mother's Name, Mobile, Location, 10th %, 12th %, 12th PCM %, JEE Percentile) are required for Students.",
+        );
         return;
       }
 
@@ -49,10 +71,20 @@ export const Register: React.FC = () => {
       const pcm = parseFloat(twelfthPCMPercentage);
       const jee = parseFloat(jeePercentile);
 
-      if (isNaN(tenth) || tenth < 0 || tenth > 100 ||
-          isNaN(twelfth) || twelfth < 0 || twelfth > 100 ||
-          isNaN(pcm) || pcm < 0 || pcm > 100 ||
-          isNaN(jee) || jee < 0 || jee > 100) {
+      if (
+        isNaN(tenth) ||
+        tenth < 0 ||
+        tenth > 100 ||
+        isNaN(twelfth) ||
+        twelfth < 0 ||
+        twelfth > 100 ||
+        isNaN(pcm) ||
+        pcm < 0 ||
+        pcm > 100 ||
+        isNaN(jee) ||
+        jee < 0 ||
+        jee > 100
+      ) {
         setError('All score percentages and percentiles must be valid numbers between 0 and 100.');
         return;
       }
@@ -105,11 +137,14 @@ export const Register: React.FC = () => {
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 font-sans">
       <div className="max-w-2xl w-full bg-slate-900/60 border border-slate-800 p-8 rounded-2xl backdrop-blur-md shadow-2xl space-y-6">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <h2 className="text-3xl font-extrabold text-white">Create Account</h2>
-          <p className="text-slate-400 text-sm">
-            Sign up to access the AI Admission Counselor portal
-          </p>
+        <div className="text-center space-y-2 flex flex-col items-center">
+          <img
+            src={abesLogo}
+            alt="ABES Logo"
+            className="h-[30px] sm:h-[38px] md:h-[45px] w-auto object-contain mb-2"
+          />
+          <h2 className="text-3xl font-extrabold text-white">ABES Admission Counsellor</h2>
+          <p className="text-slate-400 text-sm">Official Admission Portal</p>
         </div>
 
         {/* Success Alert */}
@@ -120,7 +155,8 @@ export const Register: React.FC = () => {
               <span>Registration Successful!</span>
             </div>
             <p className="text-slate-400 text-xs">
-              Account created. A verification email has been triggered. You will be redirected to the Login page shortly.
+              Account created. A verification email has been triggered. You will be redirected to
+              the Login page shortly.
             </p>
           </div>
         )}
@@ -149,7 +185,7 @@ export const Register: React.FC = () => {
                     className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 focus:border-indigo-500 focus:outline-none transition-all text-sm cursor-pointer"
                   >
                     <option value="STUDENT">Student</option>
-                    <option value="COUNSELOR">Admission Counselor (Authorized Email)</option>
+                    <option value="COUNSELOR">Admission Counsellor (Authorized Email)</option>
                   </select>
                 </div>
 

@@ -1,4 +1,4 @@
-# Project Status: AI Admission Counselor
+# Project Status: ABES Admission Counsellor
 
 ## Current State
 

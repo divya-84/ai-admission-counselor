@@ -145,7 +145,7 @@ export class CounselorController {
         const firstAdmission = student.admissions[0];
         const recommendedCourse = getCourseRecommendation(
           student.twelfthPCMPercentage ? Number(student.twelfthPCMPercentage) : null,
-          student.jeePercentile ? Number(student.jeePercentile) : null
+          student.jeePercentile ? Number(student.jeePercentile) : null,
         );
 
         return {
@@ -161,17 +161,17 @@ export class CounselorController {
       });
 
       logger.info(`Retrieved ${formattedStudents.length} students (total ${total}) from database.`);
-      
+
       res.status(200).json({
         status: 'success',
-        data: { 
+        data: {
           students: formattedStudents,
           pagination: {
             total,
             page,
             limit,
             pages: Math.ceil(total / limit),
-          }
+          },
         },
       });
     } catch (err) {
@@ -285,7 +285,7 @@ export class CounselorController {
       const { getCourseRecommendation } = await import('../services/recommendation.helper.js');
       const recommendedCourse = getCourseRecommendation(
         student.twelfthPCMPercentage ? Number(student.twelfthPCMPercentage) : null,
-        student.jeePercentile ? Number(student.jeePercentile) : null
+        student.jeePercentile ? Number(student.jeePercentile) : null,
       );
 
       const formattedStudent = {

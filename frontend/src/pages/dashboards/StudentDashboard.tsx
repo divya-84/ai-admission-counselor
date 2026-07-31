@@ -65,7 +65,8 @@ export const StudentDashboard: React.FC = () => {
 
   const firstAdmission = student?.admissions?.[0];
   const applicationStatus = firstAdmission?.status || 'APPLIED';
-  const counselorRemarks = firstAdmission?.notes || 'Application registered and pending counselor review.';
+  const counselorRemarks =
+    firstAdmission?.notes || 'Application registered and pending counselor review.';
   const registrationDate = student?.createdAt
     ? new Date(student.createdAt).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -100,7 +101,8 @@ export const StudentDashboard: React.FC = () => {
               Welcome back, {user?.name || 'Student'}!
             </h1>
             <p className="text-slate-400 text-sm">
-              Track your admission status, eligibility guidelines, fee structure, and aid applications here.
+              Track your admission status, eligibility guidelines, fee structure, and aid
+              applications here.
             </p>
           </div>
           <div className="flex flex-col items-end gap-2 shrink-0">
@@ -142,14 +144,18 @@ export const StudentDashboard: React.FC = () => {
                     <FileText className="w-5 h-5 text-indigo-400" />
                     Admission Application Status
                   </h2>
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusBadge(applicationStatus)}`}>
+                  <span
+                    className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusBadge(applicationStatus)}`}
+                  >
                     {applicationStatus.replace('_', ' ')}
                   </span>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Automatically Recommended Course</span>
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+                      Automatically Recommended Course
+                    </span>
                     <h3 className="text-2xl font-extrabold text-white leading-tight mt-1">
                       {student?.recommendedCourse || 'Currently Not Eligible'}
                     </h3>
@@ -157,17 +163,25 @@ export const StudentDashboard: React.FC = () => {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-950/60 p-4 rounded-xl border border-slate-850">
                     <div>
-                      <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Registration Date</span>
+                      <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">
+                        Registration Date
+                      </span>
                       <p className="text-sm text-slate-350 mt-1">{registrationDate}</p>
                     </div>
                     <div>
-                      <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Applicant Location</span>
-                      <p className="text-sm text-slate-350 mt-1">{student?.location || 'Not Specified'}</p>
+                      <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">
+                        Applicant Location
+                      </span>
+                      <p className="text-sm text-slate-350 mt-1">
+                        {student?.location || 'Not Specified'}
+                      </p>
                     </div>
                   </div>
 
                   <div>
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Counselor Remarks & Decisions</span>
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+                      Counselor Remarks & Decisions
+                    </span>
                     <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-300 mt-1.5 leading-relaxed">
                       {counselorRemarks}
                     </div>
@@ -177,15 +191,34 @@ export const StudentDashboard: React.FC = () => {
                 {/* Progress Stepper */}
                 <div className="pt-4 border-t border-slate-850 space-y-3">
                   <div className="flex justify-between text-xs text-slate-500 font-bold uppercase tracking-wider">
-                    <span className={applicationStatus !== 'REJECTED' ? 'text-indigo-400' : ''}>1. Registered</span>
-                    <span className={['UNDER_REVIEW', 'APPROVED', 'HOLD'].includes(applicationStatus) ? 'text-indigo-400' : ''}>2. Reviewing</span>
-                    <span className={applicationStatus === 'APPROVED' ? 'text-emerald-400' : ''}>3. Decision</span>
+                    <span className={applicationStatus !== 'REJECTED' ? 'text-indigo-400' : ''}>
+                      1. Registered
+                    </span>
+                    <span
+                      className={
+                        ['UNDER_REVIEW', 'APPROVED', 'HOLD'].includes(applicationStatus)
+                          ? 'text-indigo-400'
+                          : ''
+                      }
+                    >
+                      2. Reviewing
+                    </span>
+                    <span className={applicationStatus === 'APPROVED' ? 'text-emerald-400' : ''}>
+                      3. Decision
+                    </span>
                   </div>
                   <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${applicationStatus === 'APPROVED' ? 'bg-emerald-500' : 'bg-indigo-500'}`}
                       style={{
-                        width: applicationStatus === 'APPROVED' ? '100%' : ['UNDER_REVIEW', 'HOLD', 'REQUEST_CHANGES'].includes(applicationStatus) ? '66%' : '33%'
+                        width:
+                          applicationStatus === 'APPROVED'
+                            ? '100%'
+                            : ['UNDER_REVIEW', 'HOLD', 'REQUEST_CHANGES'].includes(
+                                  applicationStatus,
+                                )
+                              ? '66%'
+                              : '33%',
                       }}
                     />
                   </div>
@@ -209,9 +242,14 @@ export const StudentDashboard: React.FC = () => {
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {globalDocs.map((doc) => (
-                      <div key={doc.id} className="p-4 bg-slate-950 border border-slate-800 hover:border-slate-700 rounded-xl flex justify-between items-center transition-all">
+                      <div
+                        key={doc.id}
+                        className="p-4 bg-slate-950 border border-slate-800 hover:border-slate-700 rounded-xl flex justify-between items-center transition-all"
+                      >
                         <div className="space-y-1 truncate pr-2">
-                          <h4 className="text-sm font-bold text-white uppercase tracking-wider">{doc.name.replace('_', ' ')}</h4>
+                          <h4 className="text-sm font-bold text-white uppercase tracking-wider">
+                            {doc.name.replace('_', ' ')}
+                          </h4>
                           <p className="text-xs text-slate-500 truncate">{doc.fileName}</p>
                         </div>
                         <div className="flex gap-2 shrink-0">
@@ -247,17 +285,23 @@ export const StudentDashboard: React.FC = () => {
                   Government Scholarships
                 </h2>
                 <p className="text-slate-400 text-xs leading-relaxed">
-                  Admitted students are eligible for direct state and national financial aid programs. Explore official links below:
+                  Admitted students are eligible for direct state and national financial aid
+                  programs. Explore official links below:
                 </p>
 
                 <div className="space-y-3">
                   <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2 text-left">
                     <div className="flex justify-between items-start">
-                      <span className="text-xs font-bold text-white uppercase tracking-wider">UP Scholarship Portal</span>
-                      <span className="text-[10px] bg-indigo-500/15 text-indigo-300 font-semibold px-2 py-0.5 rounded">Post-Matric</span>
+                      <span className="text-xs font-bold text-white uppercase tracking-wider">
+                        UP Scholarship Portal
+                      </span>
+                      <span className="text-[10px] bg-indigo-500/15 text-indigo-300 font-semibold px-2 py-0.5 rounded">
+                        Post-Matric
+                      </span>
                     </div>
                     <p className="text-slate-500 text-[11px] leading-snug">
-                      Fee reimbursement and maintenance allowances for residents of Uttar Pradesh (General/OBC/SC/ST/Minority).
+                      Fee reimbursement and maintenance allowances for residents of Uttar Pradesh
+                      (General/OBC/SC/ST/Minority).
                     </p>
                     <a
                       href="https://scholarship.up.gov.in"
@@ -271,11 +315,16 @@ export const StudentDashboard: React.FC = () => {
 
                   <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2 text-left">
                     <div className="flex justify-between items-start">
-                      <span className="text-xs font-bold text-white uppercase tracking-wider">National Scholarship (NSP)</span>
-                      <span className="text-[10px] bg-indigo-500/15 text-indigo-300 font-semibold px-2 py-0.5 rounded">Govt of India</span>
+                      <span className="text-xs font-bold text-white uppercase tracking-wider">
+                        National Scholarship (NSP)
+                      </span>
+                      <span className="text-[10px] bg-indigo-500/15 text-indigo-300 font-semibold px-2 py-0.5 rounded">
+                        Govt of India
+                      </span>
                     </div>
                     <p className="text-slate-500 text-[11px] leading-snug">
-                      National portal supporting Central Sector schemes, Pragati/Saksham scholarships, and minority aid programs.
+                      National portal supporting Central Sector schemes, Pragati/Saksham
+                      scholarships, and minority aid programs.
                     </p>
                     <a
                       href="https://scholarships.gov.in"
@@ -293,10 +342,11 @@ export const StudentDashboard: React.FC = () => {
               <div className="p-6 rounded-2xl bg-gradient-to-r from-indigo-950/30 to-slate-900 border border-indigo-500/10 space-y-3 text-left">
                 <h4 className="text-lg font-bold text-white flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-indigo-400" />
-                  Ask Counselor AI
+                  Ask ABES Counsellor
                 </h4>
                 <p className="text-slate-400 text-xs leading-relaxed">
-                  Have questions about tuition rules, admission cutoff limits, or courses? Ask our AI agent.
+                  Have questions about tuition rules, admission cutoff limits, or courses? Ask our
+                  ABES Admission Counsellor.
                 </p>
                 <button
                   onClick={() => navigate('/chat')}
@@ -313,7 +363,8 @@ export const StudentDashboard: React.FC = () => {
                   Upload Marksheets (OCR)
                 </h4>
                 <p className="text-slate-400 text-xs leading-relaxed">
-                  Submit high school and secondary grade cards for automated extraction and advisor confirmation.
+                  Submit high school and secondary grade cards for automated extraction and advisor
+                  confirmation.
                 </p>
                 <button
                   onClick={() => navigate('/documents')}

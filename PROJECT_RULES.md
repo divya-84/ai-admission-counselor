@@ -2,7 +2,7 @@
 
 ## Project Name
 
-AI Admission Counselor
+ABES Admission Counsellor
 
 ## Tech Stack
 

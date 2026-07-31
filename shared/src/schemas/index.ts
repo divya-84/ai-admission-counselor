@@ -23,10 +23,26 @@ export const registerSchema = z
     phone: z.string().optional(),
     location: z.string().optional(),
     nationality: z.string().optional(),
-    tenthPercentage: z.number().min(0, 'Percentage must be positive').max(100, 'Percentage cannot exceed 100').optional(),
-    twelfthPercentage: z.number().min(0, 'Percentage must be positive').max(100, 'Percentage cannot exceed 100').optional(),
-    twelfthPCMPercentage: z.number().min(0, 'Percentage must be positive').max(100, 'Percentage cannot exceed 100').optional(),
-    jeePercentile: z.number().min(0, 'Percentile must be positive').max(100, 'Percentile cannot exceed 100').optional(),
+    tenthPercentage: z
+      .number()
+      .min(0, 'Percentage must be positive')
+      .max(100, 'Percentage cannot exceed 100')
+      .optional(),
+    twelfthPercentage: z
+      .number()
+      .min(0, 'Percentage must be positive')
+      .max(100, 'Percentage cannot exceed 100')
+      .optional(),
+    twelfthPCMPercentage: z
+      .number()
+      .min(0, 'Percentage must be positive')
+      .max(100, 'Percentage cannot exceed 100')
+      .optional(),
+    jeePercentile: z
+      .number()
+      .min(0, 'Percentile must be positive')
+      .max(100, 'Percentile cannot exceed 100')
+      .optional(),
     role: z.enum(['STUDENT', 'COUNSELOR']).default('STUDENT'),
   })
   .superRefine((data, ctx) => {

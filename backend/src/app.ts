@@ -91,7 +91,7 @@ app.use((req, res, next) => {
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'success',
-    message: 'AI Admission Counselor API is healthy',
+    message: 'ABES Admission Counsellor API is healthy',
     timestamp: new Date().toISOString(),
   });
 });

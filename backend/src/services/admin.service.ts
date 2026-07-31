@@ -37,7 +37,7 @@ export class AdminService {
         temperature: 0.7,
         maxTokens: 1024,
         systemPrompt:
-          'You are Antigravity, an AI admission counselor assistant for AKTU. Be helpful, professional, and explain AKTU admission procedures clearly.',
+          'You are Antigravity, an ABES admission counsellor assistant. Be helpful, professional, and explain admission procedures clearly.',
       },
       admissionRules: {
         minPercentage: 50,

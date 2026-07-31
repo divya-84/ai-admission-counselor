@@ -1,9 +1,9 @@
 {
-  "name": "ai-admission-counselor",
+  "name": "abes-admission-counsellor",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "AI Admission Counselor project containing frontend, backend, and shared modules.",
+  "description": "ABES Admission Counsellor project containing frontend, backend, and shared modules.",
   "workspaces": [
     "frontend",
     "backend",

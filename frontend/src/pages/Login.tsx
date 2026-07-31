@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import abesLogo from '../assets/images/abes-logo.png';
 import { useNavigate, useLocation, Link } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { setCredentials, setLoading, setError } from '../store/authSlice';
@@ -99,11 +100,14 @@ export const Login: React.FC = () => {
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 font-sans">
       <div className="max-w-md w-full bg-slate-900/60 border border-slate-800 p-8 rounded-2xl backdrop-blur-md shadow-2xl space-y-6">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <h2 className="text-3xl font-extrabold text-white">Welcome Back</h2>
-          <p className="text-slate-400 text-sm">
-            Sign in to access your admission counselor portal
-          </p>
+        <div className="text-center space-y-2 flex flex-col items-center">
+          <img
+            src={abesLogo}
+            alt="ABES Logo"
+            className="h-[30px] sm:h-[38px] md:h-[45px] w-auto object-contain mb-2"
+          />
+          <h2 className="text-3xl font-extrabold text-white">ABES Admission Counsellor</h2>
+          <p className="text-slate-400 text-sm">Official Admission Portal</p>
         </div>
 
         {/* Errors */}

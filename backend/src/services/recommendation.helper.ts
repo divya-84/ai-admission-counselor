@@ -7,7 +7,10 @@ import logger from '../config/logger.js';
  * - 12th PCM >= 80 and JEE >= 75 -> CSE (Data Science)
  * - Else -> "Currently Not Eligible"
  */
-export function getCourseRecommendation(pcm12: number | null | undefined, jee: number | null | undefined): string {
+export function getCourseRecommendation(
+  pcm12: number | null | undefined,
+  jee: number | null | undefined,
+): string {
   if (pcm12 === null || pcm12 === undefined || jee === null || jee === undefined) {
     return 'Currently Not Eligible';
   }

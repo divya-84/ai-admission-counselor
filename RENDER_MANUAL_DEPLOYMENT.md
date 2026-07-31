@@ -1,6 +1,6 @@
 # Manual Deployment Guide: Render Web Service & Vercel
 
-This guide outlines the step-by-step process for deploying the **AI Admission Counselor** application manually using a **Render Web Service** (for the backend), an **existing Render PostgreSQL database**, and **Vercel** (for the frontend React Vite application).
+This guide outlines the step-by-step process for deploying the **ABES Admission Counsellor** application manually using a **Render Web Service** (for the backend), an **existing Render PostgreSQL database**, and **Vercel** (for the frontend React Vite application).
 
 ---
 
