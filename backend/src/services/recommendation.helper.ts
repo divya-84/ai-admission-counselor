@@ -2,9 +2,9 @@ import logger from '../config/logger.js';
 
 /**
  * Automatically recommends a course based on the following rules:
- * - 12th PCM >= 80 and JEE > 85 -> CSE(AIML)
- * - 12th PCM >= 80 and JEE >= 80 -> CSE(Core)
- * - 12th PCM >= 80 and JEE >= 75 -> CSE(Data Science)
+ * - 12th PCM >= 80 or JEE > 85 -> CSE(AIML)
+ * - 12th PCM >= 80 or JEE >= 80 -> CSE(Core)
+ * - 12th PCM >= 80 or JEE >= 75 -> CSE(Data Science)
  * - Else -> "Currently Not Eligible"
  */
 export function getCourseRecommendation(
@@ -24,11 +24,11 @@ export function getCourseRecommendation(
 
   logger.info(`Calculating recommendation: PCM = ${pcmVal}, JEE = ${jeeVal}`);
 
-  if (pcmVal >= 80 && jeeVal > 85) {
+  if (pcmVal >= 80 || jeeVal > 85) {
     return 'CSE(AIML)';
-  } else if (pcmVal >= 80 && jeeVal >= 80) {
+  } else if (pcmVal >= 80 || jeeVal >= 80) {
     return 'CSE(Core)';
-  } else if (pcmVal >= 80 && jeeVal >= 75) {
+  } else if (pcmVal >= 80 || jeeVal >= 75) {
     return 'CSE(Data Science)';
   } else {
     return 'Currently Not Eligible';
