@@ -37,7 +37,7 @@ export class AdminService {
         temperature: 0.7,
         maxTokens: 1024,
         systemPrompt:
-          'You are Antigravity, an ABES admission counsellor assistant. Be helpful, professional, and explain admission procedures clearly.',
+          'You are the ABES Admission Counsellor assistant. Be helpful, professional, and explain admission procedures clearly.',
       },
       admissionRules: {
         minPercentage: 50,

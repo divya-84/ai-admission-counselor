@@ -109,6 +109,13 @@ function DashboardLayout() {
       <main className="flex-1">
         <Outlet />
       </main>
+      {/* Footer */}
+      <footer className="bg-slate-950 border-t border-slate-900 py-6 text-center text-xs text-slate-500 space-y-1">
+        <div>&copy; 2026 ABES Admission Counsellor</div>
+        <div className="text-[10px] text-slate-650 font-medium">
+          Powered for ABES Engineering College
+        </div>
+      </footer>
     </div>
   );
 }

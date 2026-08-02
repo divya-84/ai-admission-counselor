@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
+import abesLogo from '../../assets/images/abes-logo.png';
 import type { RootState } from '../../store';
 import {
   Users,
@@ -421,11 +422,17 @@ export const CounselorDashboard: React.FC = () => {
         {/* Welcome Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-900/50 border border-slate-800 p-6 rounded-2xl backdrop-blur-md gap-4">
           <div className="space-y-1">
-            <h1 className="text-3xl font-extrabold text-white flex items-center gap-2">
-              Welcome back, Advisor {user?.name || 'Counselor'}!
+            <h1 className="text-3xl font-extrabold text-white flex items-center gap-2.5">
+              <img
+                src={abesLogo}
+                alt="ABES Logo"
+                className="h-[30px] sm:h-[38px] md:h-[45px] w-auto object-contain"
+              />
+              ABES Admission Counsellor
             </h1>
             <p className="text-slate-400 text-sm">
-              Review assigned student files, check schedule availability, and process applications.
+              Welcome back, Advisor {user?.name || 'Counselor'}! Review assigned student files,
+              check schedule availability, and process applications.
             </p>
           </div>
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-sm font-semibold">

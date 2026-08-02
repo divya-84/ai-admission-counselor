@@ -1,5 +1,6 @@
 import React from 'react';
 import { GraduationCap, Users, Star, BookOpen, FolderLock } from 'lucide-react';
+import abesLogo from '../../assets/images/abes-logo.png';
 
 export const HodDashboard: React.FC = () => {
   // Mock data for HOD dashboard
@@ -53,12 +54,17 @@ export const HodDashboard: React.FC = () => {
         {/* Welcome Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-900/50 border border-slate-800 p-6 rounded-2xl backdrop-blur-md gap-4">
           <div className="space-y-1">
-            <h1 className="text-3xl font-extrabold text-white flex items-center gap-2">
-              Academic Dashboard (HOD)
+            <h1 className="text-3xl font-extrabold text-white flex items-center gap-2.5">
+              <img
+                src={abesLogo}
+                alt="ABES Logo"
+                className="h-[30px] sm:h-[38px] md:h-[45px] w-auto object-contain"
+              />
+              ABES Admission Counsellor
             </h1>
             <p className="text-slate-400 text-sm">
-              Overview of department statistics, course seating metrics, and counselor feedback
-              logs.
+              Academic Dashboard (HOD) - Overview of department statistics, course seating metrics,
+              and counselor feedback logs.
             </p>
           </div>
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm font-semibold">

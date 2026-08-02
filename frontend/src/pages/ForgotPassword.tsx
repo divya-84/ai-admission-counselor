@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router';
 import { Mail, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
+import abesLogo from '../assets/images/abes-logo.png';
 
 export const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -45,19 +46,25 @@ export const ForgotPassword: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 font-sans">
+    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 font-sans">
       <div className="max-w-md w-full bg-slate-900/60 border border-slate-800 p-8 rounded-2xl backdrop-blur-md shadow-2xl space-y-6">
         {/* Header */}
-        <div className="space-y-2">
+        <div className="text-center space-y-2 flex flex-col items-center">
           <Link
             to="/login"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-300 transition-colors uppercase tracking-wider"
+            className="self-start inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-300 transition-colors uppercase tracking-wider mb-2"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Login
           </Link>
-          <h2 className="text-3xl font-extrabold text-white">Reset Password</h2>
-          <p className="text-slate-400 text-sm">
+          <img
+            src={abesLogo}
+            alt="ABES Logo"
+            className="h-[30px] sm:h-[38px] md:h-[45px] w-auto object-contain mb-2"
+          />
+          <h2 className="text-3xl font-extrabold text-white">ABES Admission Counsellor</h2>
+          <p className="text-slate-400 text-sm">Your Smart Admission Assistant</p>
+          <p className="text-slate-500 text-xs">
             Enter your email address and we'll send you a link to reset your password.
           </p>
         </div>
@@ -116,6 +123,12 @@ export const ForgotPassword: React.FC = () => {
             </button>
           </form>
         )}
+      </div>
+      <div className="mt-6 text-center text-xs text-slate-650 space-y-0.5">
+        <div>&copy; 2026 ABES Admission Counsellor</div>
+        <div className="text-[10px] text-slate-500 font-medium">
+          Powered for ABES Engineering College
+        </div>
       </div>
     </div>
   );

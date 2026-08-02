@@ -31,7 +31,7 @@ All deployment configurations have been updated and verified for a transition to
 
 - **Status**: Completed. Validation schemas and controllers updated to support both `name` and `fullname` parameters.
 
-### 3. Voice Admission Counselor
+### 3. Voice ABES Admission Counsellor
 
 - **Status**: Completed. Fully integrated native Speech-to-Text and Text-to-Speech support for both Hindi and English inside [Chat.tsx](file:///c:/Users/mahes/OneDrive/Desktop/AI_Admission_Counselor/frontend/src/pages/Chat.tsx) with mic pulsing visuals, read-aloud banners, and individual card playbacks.
 
