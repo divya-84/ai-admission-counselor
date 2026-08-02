@@ -227,7 +227,7 @@ export const Login: React.FC = () => {
             to="/register"
             className="text-indigo-400 hover:text-indigo-300 transition-colors font-medium"
           >
-            Register as Student
+            Register Here
           </Link>
         </div>
       </div>
