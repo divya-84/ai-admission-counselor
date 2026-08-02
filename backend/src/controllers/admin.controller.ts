@@ -229,6 +229,56 @@ export class AdminController {
       next(err);
     }
   }
+
+  // 8. Authorized Counselors Management
+  async listAuthorizedCounselors(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const counselors = await adminService.listAuthorizedCounselors();
+      res.status(200).json({ status: 'success', data: { counselors } });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async addAuthorizedCounselor(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        res.status(400).json({ status: 'error', message: 'Email is required.' });
+        return;
+      }
+      const counselor = await adminService.addAuthorizedCounselor(email);
+      res.status(201).json({ status: 'success', data: { counselor } });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async deleteAuthorizedCounselor(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const { email } = req.params;
+      if (!email) {
+        res.status(400).json({ status: 'error', message: 'Email param is required.' });
+        return;
+      }
+      await adminService.deleteAuthorizedCounselor(email);
+      res.status(200).json({ status: 'success', message: 'Authorized counselor removed.' });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 export const adminController = new AdminController();

@@ -40,4 +40,12 @@ router.post('/documents/:id/verify', adminController.verifyDocument as RequestHa
 // 7. Knowledge Base (RAG chunks)
 router.get('/kb', adminController.listKnowledgeBaseChunks as RequestHandler);
 
+// 8. Authorized Counselors
+router.get('/authorized-counselors', adminController.listAuthorizedCounselors as RequestHandler);
+router.post('/authorized-counselors', adminController.addAuthorizedCounselor as RequestHandler);
+router.delete(
+  '/authorized-counselors/:email',
+  adminController.deleteAuthorizedCounselor as RequestHandler,
+);
+
 export default router;

@@ -284,6 +284,41 @@ export class AdminService {
       },
     ];
   }
+
+  // 8. Authorized Counselors Management
+  async listAuthorizedCounselors() {
+    return prisma.authorizedCounselor.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async addAuthorizedCounselor(email: string) {
+    logger.info(`[Admin Console]: Authorizing counselor email: ${email}`);
+    return prisma.authorizedCounselor.create({
+      data: { email: email.toLowerCase().trim() },
+    });
+  }
+
+  async deleteAuthorizedCounselor(email: string) {
+    const normalizedEmail = email.toLowerCase().trim();
+    logger.info(`[Admin Console]: Revoking counselor authorization for: ${normalizedEmail}`);
+
+    // Find the user with this email
+    const user = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
+
+    if (user && user.role === 'COUNSELOR') {
+      await prisma.user.delete({
+        where: { id: user.id },
+      });
+      logger.info(`[Admin Console]: Deleted counselor user with email: ${normalizedEmail}`);
+    }
+
+    return prisma.authorizedCounselor.delete({
+      where: { email: normalizedEmail },
+    });
+  }
 }
 
 export const adminService = new AdminService();

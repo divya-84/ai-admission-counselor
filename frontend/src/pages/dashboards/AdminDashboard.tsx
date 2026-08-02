@@ -79,16 +79,28 @@ interface KBChunk {
 
 export const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
-    'users' | 'courses' | 'departments' | 'scholarships' | 'rules' | 'ai' | 'kb' | 'docs'
+    | 'users'
+    | 'counselors'
+    | 'courses'
+    | 'departments'
+    | 'scholarships'
+    | 'rules'
+    | 'ai'
+    | 'kb'
+    | 'docs'
   >('users');
 
   // Lists
   const [usersList, setUsersList] = useState<User[]>([]);
+  const [authorizedCounselorsList, setAuthorizedCounselorsList] = useState<
+    { id: string; email: string; createdAt: string }[]
+  >([]);
   const [coursesList, setCoursesList] = useState<Course[]>([]);
   const [departmentsList, setDepartmentsList] = useState<Department[]>([]);
   const [scholarshipsList, setScholarshipsList] = useState<Scholarship[]>([]);
   const [documentsList, setDocumentsList] = useState<Document[]>([]);
   const [kbChunks, setKbChunks] = useState<KBChunk[]>([]);
+  const [newCounselorEmail, setNewCounselorEmail] = useState('');
 
   // Settings
   const [aiModel, setAiModel] = useState<string>('gpt-4o');
@@ -131,6 +143,10 @@ export const AdminDashboard: React.FC = () => {
         const response = await fetch('/api/admin/users');
         const res = await response.json();
         if (response.ok) setUsersList(res.data.users);
+      } else if (activeTab === 'counselors') {
+        const response = await fetch('/api/admin/authorized-counselors');
+        const res = await response.json();
+        if (response.ok) setAuthorizedCounselorsList(res.data.counselors);
       } else if (activeTab === 'courses') {
         const response = await fetch('/api/admin/courses');
         const res = await response.json();
@@ -215,6 +231,54 @@ export const AdminDashboard: React.FC = () => {
       }
     } catch {
       setError('Failed to delete user.');
+    }
+  };
+
+  const handleAddCounselor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCounselorEmail) return;
+    try {
+      const response = await fetch('/api/admin/authorized-counselors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: newCounselorEmail }),
+      });
+      if (response.ok) {
+        setSuccess('Counselor email authorized successfully.');
+        setNewCounselorEmail('');
+        fetchTabDetails();
+      } else {
+        const res = await response.json();
+        setError(res.message || 'Failed to authorize counselor email.');
+      }
+    } catch {
+      setError('Failed to authorize counselor email.');
+    }
+  };
+
+  const handleDeleteCounselor = async (email: string) => {
+    if (
+      !window.confirm(
+        `Revoke authorization for counselor email: ${email}? This will also delete their counselor account if they have already registered.`,
+      )
+    )
+      return;
+    try {
+      const response = await fetch(
+        `/api/admin/authorized-counselors/${encodeURIComponent(email)}`,
+        {
+          method: 'DELETE',
+        },
+      );
+      if (response.ok) {
+        setSuccess('Authorized counselor email removed.');
+        fetchTabDetails();
+      } else {
+        const res = await response.json();
+        setError(res.message || 'Failed to remove counselor email.');
+      }
+    } catch {
+      setError('Failed to remove counselor email.');
     }
   };
 
@@ -416,6 +480,7 @@ export const AdminDashboard: React.FC = () => {
           {(
             [
               { id: 'users', label: 'Users', icon: Users },
+              { id: 'counselors', label: 'Authorized Counselors', icon: ShieldAlert },
               { id: 'courses', label: 'Courses', icon: BookOpen },
               { id: 'departments', label: 'Departments', icon: Building2 },
               { id: 'scholarships', label: 'Scholarships', icon: Award },
@@ -521,6 +586,84 @@ export const AdminDashboard: React.FC = () => {
                               </td>
                             </tr>
                           ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* 1b. Tab: Authorized Counselors */}
+                {activeTab === 'counselors' && (
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-base font-bold text-white uppercase tracking-wide">
+                        Authorized Counselor Emails
+                      </h3>
+                    </div>
+
+                    <form
+                      onSubmit={handleAddCounselor}
+                      className="p-4 bg-slate-950/60 border border-slate-850 rounded-xl flex flex-wrap items-end gap-4"
+                    >
+                      <div className="flex-1 min-w-[200px] space-y-1">
+                        <label className="text-[10px] text-slate-400 font-bold uppercase block">
+                          Authorize New Counselor Email
+                        </label>
+                        <input
+                          type="email"
+                          required
+                          placeholder="e.g. counselor@abes.ac.in"
+                          value={newCounselorEmail}
+                          onChange={(e) => setNewCounselorEmail(e.target.value)}
+                          className="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-white"
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        className="px-4 py-2 bg-indigo-650 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-all"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        Authorize Email
+                      </button>
+                    </form>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="border-b border-slate-800 text-slate-500">
+                            <th className="py-2.5">Email Address</th>
+                            <th className="py-2.5">Authorized Date</th>
+                            <th className="py-2.5 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {authorizedCounselorsList.length === 0 ? (
+                            <tr>
+                              <td colSpan={3} className="py-8 text-center text-slate-500 italic">
+                                No counselor emails authorized yet.
+                              </td>
+                            </tr>
+                          ) : (
+                            authorizedCounselorsList.map((cns) => (
+                              <tr key={cns.id} className="border-b border-slate-900 text-slate-300">
+                                <td className="py-3 font-semibold text-white">{cns.email}</td>
+                                <td className="py-3">
+                                  {new Date(cns.createdAt).toLocaleDateString(undefined, {
+                                    dateStyle: 'medium',
+                                  })}
+                                </td>
+                                <td className="py-3 text-right">
+                                  <button
+                                    onClick={() => handleDeleteCounselor(cns.email)}
+                                    className="p-1 rounded text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 cursor-pointer"
+                                    title="Revoke Authorization"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))
+                          )}
                         </tbody>
                       </table>
                     </div>
