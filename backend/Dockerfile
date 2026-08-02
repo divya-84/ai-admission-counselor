@@ -8,6 +8,7 @@ COPY frontend/package.json ./frontend/
 RUN npm ci
 COPY shared/ ./shared/
 COPY backend/ ./backend/
+ENV DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy
 RUN npm run build -w shared
 RUN npm run build -w backend
 # Generate Prisma Client in builder

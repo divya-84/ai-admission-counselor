@@ -30,6 +30,8 @@ jobs:
         run: npm run lint
 
       - name: Build Codebase
+        env:
+          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
         run: |
           npm run build -w shared
           npm run build -w backend
